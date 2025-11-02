@@ -2,8 +2,5 @@
 __pycache__/
 *.pyc
 .DS_Store
-logs/
-tmp/
-models/
 evaluation/wer_results.csv
-data/samples/
+.ipynb_checkpoints/
