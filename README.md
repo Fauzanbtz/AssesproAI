@@ -131,3 +131,4 @@ streamlit run app/app.py
 > - Target akurasi *Speech-to-Text (STT)* minimal **≥ 90%** (berdasarkan Word Error Rate).  
 > - Pipeline lengkap: **Video → Audio → Transkrip → Analisis → JSON HR-friendly**.  
 > - Folder `data/samples/` digunakan untuk contoh video dan dataset pengujian.
+> - buat file tmp yang isinya /audio, /transcripts , /videos

@@ -4,6 +4,7 @@ ffmpeg-python
 yt-dlp
 requests
 whisper
+openai-whisper
 faster-whisper
 sentence-transformers
 langdetect
@@ -12,4 +13,5 @@ pandas
 numpy
 jiwer
 Sastrawi
-EOF
+langdetect
+transformers

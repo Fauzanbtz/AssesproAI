@@ -23,7 +23,7 @@ qids = [q["qid"] for q in qbank]
 
 # Sidebar untuk memilih pertanyaan
 st.sidebar.header("🎯 Pilih Pertanyaan Interview")
-sel_qid = st.sidebar.selectbox("Pilih QID", qids, index=0)
+sel_qid = st.sidebar.selectbox("Pilih Pertanyaan", qids, index=0)
 qspec = next(q for q in qbank if q["qid"] == sel_qid)
 
 st.sidebar.caption(qspec["question_text"].get("id", ""))
