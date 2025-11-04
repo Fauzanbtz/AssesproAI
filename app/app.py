@@ -14,6 +14,8 @@ from core.stt import transcribe
 from core.evaluator import evaluate_answer
 from core.serializer import compose_hr_json
 
+from core.storage import save_candidate_metadata
+
 # Konfigurasi halaman
 st.set_page_config(page_title="Assespro AI", layout="wide")
 
@@ -99,5 +101,18 @@ if video_path:
         mime="application/json"
     )
 
+    # ✅ Simpan metadata kandidat otomatis ke file JSON
+    candidate_id = "001"  # nanti bisa diganti input di sidebar
+    save_candidate_metadata(
+        candidate_id=candidate_id,
+        question=qspec['question_text']['en'],
+        recorded_video_url=source_url if source_url else str(video_path),
+        is_video_exist=True
+    )
+
+    st.success(f"✅ Metadata kandidat {candidate_id} berhasil disimpan ke data/candidates/")
+
     with st.expander("🗣️ Lihat Segmen Transkrip"):
         st.write(segments)
+
+

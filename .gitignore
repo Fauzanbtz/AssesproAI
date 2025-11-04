@@ -3,5 +3,5 @@ __pycache__/
 *.pyc
 .DS_Store
 evaluation/wer_results.csv
-.ipynb_checkpoints
+.ipynb_checkpoints/
 tmp/
