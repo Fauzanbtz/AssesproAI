@@ -1,18 +1,16 @@
-- qid: pertanyaan 1
+- qid: Q01
   question_text:
-    en: "How would you build an image classification model using convolutional neural networks (CNNs)?"
+    en: "Can you share any specific challenges you faced while working on certification and how you overcame them?"
   languages_supported: ["en"]
   answers:
     en:
       ideal: >
-        To build an image classification model, I would use a convolutional neural network (CNN).
-        I prepare the dataset, define the architecture with convolutional, ReLU, and pooling layers,
-        then add dense and softmax layers for classification. The model is trained using Adam optimizer
-        and categorical cross-entropy loss. I would apply data augmentation and possibly fine-tune
-        using pre-trained models like ResNet or MobileNet for higher accuracy.
+        The candidate should describe a specific challenge faced during certification,
+        detail the debugging or model improvement process, and explain how tools like TensorBoard,
+        EarlyStopping, or data preprocessing helped overcome the issue.
       keywords:
-        must: ["dataset","convolutional","relu","pooling","softmax","optimizer","augmentation","transfer learning"]
-        nice: ["resnet","mobilenet","accuracy"]
+        must: ["TensorFlow", "debugging", "shape mismatch", "TensorBoard", "EarlyStopping", "data preprocessing"]
+        nice: ["training instability", "gradients", "loss curves", "input dimensions", "deep learning workflow"]
   weights:
     similarity: 0.55
     keyword_must: 0.30
@@ -20,25 +18,79 @@
     structure: 0.05
   pass_threshold: 0.70
 
-- qid: pertanyaan 2
+- qid: Q02
   question_text:
-    en: "Can you explain how you build and train a neural network model in TensorFlow?"
+    en: "Can you describe your experience with transfer learning in TensorFlow? How did it benefit your projects?"
   languages_supported: ["en"]
   answers:
     en:
       ideal: >
-        When building and training a neural network model in TensorFlow, I start by importing TensorFlow and Keras.
-        Then, I define the architecture using either the Sequential API or Functional API depending on the model complexity.
-        The model may include several Dense or Conv2D layers, activation functions like ReLU, and a Softmax layer for classification.
-        After defining the architecture, I compile the model using an optimizer such as Adam, a loss function
-        like categorical cross-entropy for classification, and metrics such as accuracy.
-        I prepare the dataset by normalizing and splitting it into training and validation sets.
-        I train the model with model.fit() for several epochs while monitoring performance.
-        Callbacks like EarlyStopping and ModelCheckpoint help prevent overfitting and save the best weights.
-        Finally, I evaluate the model on test data and can convert it to TensorFlow Lite for deployment.
+        The candidate should explain how transfer learning was applied in their projects using TensorFlow,
+        mentioning models like MobileNetV2 or EfficientNet, and describe measurable improvements such as
+        reduced training time and increased accuracy.
       keywords:
-        must: ["tensorflow", "keras", "sequential", "dense", "relu", "softmax", "optimizer", "adam", "loss", "accuracy", "fit", "earlystopping"]
-        nice: ["functional api", "modelcheckpoint", "categorical cross-entropy", "normalization", "validation", "deployment", "tensorflow lite"]
+        must: ["transfer learning", "TensorFlow", "MobileNetV2", "EfficientNetB0", "accuracy", "training time"]
+        nice: ["limited data", "image classification", "generalization"]
+  weights:
+    similarity: 0.55
+    keyword_must: 0.30
+    keyword_nice: 0.10
+    structure: 0.05
+  pass_threshold: 0.70
+
+- qid: Q03
+  question_text:
+    en: "Describe a complex TensorFlow model you have built and the steps you took to ensure its accuracy and efficiency."
+  languages_supported: ["en"]
+  answers:
+    en:
+      ideal: >
+        The candidate should describe a complex TensorFlow model, such as one combining CNNs and metadata,
+        and explain optimization techniques like normalization, dropout, learning rate scheduling,
+        and performance tuning using TensorFlow Profiler.
+      keywords:
+        must: ["TensorFlow", "CNN", "normalization", "dropout", "learning rate", "Profiler"]
+        nice: ["multi-input", "augmentation", "mixed precision", "pruning"]
+  weights:
+    similarity: 0.55
+    keyword_must: 0.30
+    keyword_nice: 0.10
+    structure: 0.05
+  pass_threshold: 0.70
+
+- qid: Q04
+  question_text:
+    en: "Explain how to implement dropout in a TensorFlow model and the effect it has on training."
+  languages_supported: ["en"]
+  answers:
+    en:
+      ideal: >
+        The candidate should explain how to add a Dropout layer in TensorFlow (e.g., Dropout(0.5)),
+        describe its role in randomly deactivating neurons, and discuss how it prevents overfitting
+        and improves generalization.
+      keywords:
+        must: ["dropout", "TensorFlow", "Dropout(0.5)", "overfitting", "generalization"]
+        nice: ["batch normalization", "regularization"]
+  weights:
+    similarity: 0.55
+    keyword_must: 0.30
+    keyword_nice: 0.10
+    structure: 0.05
+  pass_threshold: 0.70
+
+- qid: Q05
+  question_text:
+    en: "Describe the process of building a convolutional neural network (CNN) using TensorFlow for image classification."
+  languages_supported: ["en"]
+  answers:
+    en:
+      ideal: >
+        The candidate should describe the process of building a CNN in TensorFlow, including preprocessing,
+        defining layers like Conv2D, ReLU, MaxPooling, Flatten, and Dense, using dropout, compiling with
+        optimizers like Adam, and training with validation and TensorBoard monitoring.
+      keywords:
+        must: ["CNN", "TensorFlow", "Conv2D", "ReLU", "MaxPooling", "Dense", "Adam", "cross entropy"]
+        nice: ["data augmentation", "TensorBoard", "dropout", "image classification"]
   weights:
     similarity: 0.55
     keyword_must: 0.30

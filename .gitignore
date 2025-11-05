@@ -5,3 +5,4 @@ __pycache__/
 evaluation/wer_results.csv
 .ipynb_checkpoints/
 tmp/
+data/candidates/*.json

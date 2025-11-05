@@ -1,7 +1,8 @@
-import io, json
+import io
+import json
+import sys
 from pathlib import Path
 import streamlit as st
-import sys
 
 # Tambahkan path agar bisa impor modul dari folder core
 sys.path.append(str(Path(__file__).resolve().parent.parent))
@@ -13,106 +14,134 @@ from core.media import extract_wav16k
 from core.stt import transcribe
 from core.evaluator import evaluate_answer
 from core.serializer import compose_hr_json
-
 from core.storage import save_candidate_metadata
 
-# Konfigurasi halaman
-st.set_page_config(page_title="Assespro AI", layout="wide")
-
+# =======================================================
+# KONFIGURASI
+# =======================================================
+st.set_page_config(page_title="Assespro AI - Multi Question", layout="wide")
 cfg = load_config()
 qbank = load_qbank("data/question_bank.yaml")
-qids = [q["qid"] for q in qbank]
 
-# Sidebar untuk memilih pertanyaan
-st.sidebar.header("🎯 Pilih Pertanyaan Interview")
-sel_qid = st.sidebar.selectbox("Pilih Pertanyaan", qids, index=0)
-qspec = next(q for q in qbank if q["qid"] == sel_qid)
+st.sidebar.header("🧑‍💼 Info Kandidat")
+candidate_id = st.sidebar.text_input("Candidate ID", "001")
+st.sidebar.caption("Masukkan ID unik kandidat untuk penyimpanan data")
 
-st.sidebar.caption(qspec["question_text"].get("id", ""))
+st.title("🎯 Assespro AI - Multi Question Interview")
 
 # =======================================================
-# TAMPILAN UTAMA KANDIDAT
+# INPUT VIDEO UNTUK 5 PERTANYAAN
 # =======================================================
-st.title("Assespro AI ")
+videos_input = []
 
-# --- Tampilkan pertanyaan besar di halaman utama ---
-st.markdown(
-    f"""
-    <div style="background-color:#f8f9fa; padding:25px; border-radius:15px; border:1px solid #ddd; margin-bottom:20px;">
-        <h2 style="color:#222; text-align:center;">{qspec['question_text']['en']}</h2>
-        <p style="text-align:center; color:#555; font-size:16px;">{qspec['question_text'].get('id','')}</p>
-    </div>
-    """,
-    unsafe_allow_html=True
-)
-
-tab1, tab2 = st.tabs(["🎬 Link Video", "📤 Upload File"])
-
-video_path, source_url = None, None
-
-# -------------------------------------------------------
-# TAB 1 - Link Video
-# -------------------------------------------------------
-with tab1:
-    url = st.text_input("Tempel link video:", "")
-    if st.button("Proses dari Link"):
-        if not url.strip():
-            st.error("URL kosong")
-        else:
-            with st.spinner("Mengunduh video..."):
-                video_path = fetch_video_to_local(url, cfg)
-                source_url = url
-
-# -------------------------------------------------------
-# TAB 2 - Upload File
-# -------------------------------------------------------
-with tab2:
-    f = st.file_uploader("Unggah video (mp4/mov/webm)", type=["mp4", "mov", "webm"])
-    if st.button("Proses dari Upload"):
-        if not f:
-            st.error("Pilih file dulu")
-        else:
-            p = Path(cfg["paths"]["tmp_videos"]) / f.name
-            p.parent.mkdir(parents=True, exist_ok=True)
-            p.write_bytes(f.read())
-            video_path = p
-
-# -------------------------------------------------------
-# PROSES PIPELINE: audio → transkrip → evaluasi
-# -------------------------------------------------------
-if video_path:
-    with st.spinner("🎧 Ekstrak audio & transkrip..."):
-        wav = extract_wav16k(video_path, cfg)
-        text, segments, meta = transcribe(wav, cfg)
-
-    with st.spinner("🧠 Mengevaluasi jawaban..."):
-        result = evaluate_answer(text, qspec, meta, cfg)
-
-    out = compose_hr_json(qspec, text, result, meta, source_url, video_path)
-
-    st.subheader("📋 Hasil Evaluasi (untuk HR)")
-    st.json(out)
-
-    buf = io.BytesIO(json.dumps(out, ensure_ascii=False, indent=2).encode("utf-8"))
-    st.download_button(
-        "💾 Download JSON Hasil",
-        data=buf,
-        file_name=f"{qspec['qid']}_result.json",
-        mime="application/json"
+for idx, qspec in enumerate(qbank[:5], start=1):
+    st.markdown("---")
+    st.subheader(f"🧩 Pertanyaan {idx}")
+    st.markdown(
+        f"""
+        <div style="background-color:#f8f9fa; padding:20px; border-radius:15px; border:1px solid #ddd;">
+            <h4 style="color:#222;">{qspec['question_text']['en']}</h4>
+            <p style="color:#555;">{qspec['question_text'].get('id','')}</p>
+        </div>
+        """,
+        unsafe_allow_html=True
     )
 
-    # ✅ Simpan metadata kandidat otomatis ke file JSON
-    candidate_id = "001"  # nanti bisa diganti input di sidebar
-    save_candidate_metadata(
-        candidate_id=candidate_id,
-        question=qspec['question_text']['en'],
-        recorded_video_url=source_url if source_url else str(video_path),
-        is_video_exist=True
-    )
+    tab1, tab2 = st.tabs([f"🔗 Link Video {idx}", f"📤 Upload File {idx}"])
+    video_path, source_url = None, None
 
-    st.success(f"✅ Metadata kandidat {candidate_id} berhasil disimpan ke data/candidates/")
+    # ---------------------------------------------------
+    # TAB 1 - via Link Video
+    # ---------------------------------------------------
+    with tab1:
+        url = st.text_input(f"Link Video Pertanyaan {idx}", key=f"url_{idx}")
+        if url.strip():
+            source_url = url
+            video_path = None  # video akan diunduh nanti saat tombol "Kumpulkan" ditekan
 
-    with st.expander("🗣️ Lihat Segmen Transkrip"):
-        st.write(segments)
+    # ---------------------------------------------------
+    # TAB 2 - via Upload File
+    # ---------------------------------------------------
+    with tab2:
+        f = st.file_uploader(f"Upload Video Jawaban {idx}", type=["mp4", "mov", "webm"], key=f"file_{idx}")
+        if f:
+            tmp_path = Path(cfg["paths"]["tmp_videos"]) / f.name
+            tmp_path.parent.mkdir(parents=True, exist_ok=True)
+            tmp_path.write_bytes(f.read())
+            video_path = tmp_path
 
+    videos_input.append({
+        "qid": qspec["qid"],
+        "qspec": qspec,
+        "video_path": video_path,
+        "source_url": source_url
+    })
 
+# =======================================================
+# 🚀 SATU TOMBOL UNTUK PROSES SEMUA
+# =======================================================
+if st.button("🚀 Kumpulkan & Proses Semua Jawaban"):
+    results_all = []
+
+    for idx, entry in enumerate(videos_input, start=1):
+        qspec = entry["qspec"]
+        video_path = entry["video_path"]
+        source_url = entry["source_url"]
+
+        if not video_path and not source_url:
+            st.warning(f"⚠️ Pertanyaan {idx} belum memiliki video, dilewati.")
+            continue
+
+        # Jika hanya ada link, baru unduh saat ini
+        if source_url and not video_path:
+            with st.spinner(f"📥 Mengunduh video pertanyaan {idx}..."):
+                video_path = fetch_video_to_local(source_url, cfg)
+
+        with st.spinner(f"🎧 Memproses audio & transkrip (Pertanyaan {idx})..."):
+            wav = extract_wav16k(video_path, cfg)
+            text, segments, meta = transcribe(wav, cfg)
+
+        with st.spinner(f"🧠 Mengevaluasi jawaban (Pertanyaan {idx})..."):
+            result = evaluate_answer(text, qspec, meta, cfg)
+
+        out = compose_hr_json(qspec, text, result, meta, source_url, video_path)
+        results_all.append(out)
+
+        # Simpan metadata per pertanyaan
+        save_candidate_metadata(
+            candidate_id=candidate_id,
+            question=qspec["question_text"]["en"],
+            recorded_video_url=source_url if source_url else str(video_path),
+            is_video_exist=True
+        )
+
+        st.success(f"✅ Pertanyaan {idx} berhasil dievaluasi dan disimpan untuk kandidat {candidate_id}")
+
+        # Ekspander untuk lihat transkrip
+        with st.expander(f"🗣️ Transkrip Pertanyaan {idx}"):
+            st.write(segments)
+
+    # =======================================================
+    # OUTPUT SEMUA HASIL
+    # =======================================================
+    if results_all:
+        st.markdown("---")
+        st.subheader("📊 Rekapitulasi Hasil Evaluasi Seluruh Pertanyaan")
+
+        all_json = {
+            "candidateId": candidate_id,
+            "totalQuestions": len(results_all),
+            "results": results_all
+        }
+
+        st.json(all_json)
+
+        buf = io.BytesIO(json.dumps(all_json, ensure_ascii=False, indent=2).encode("utf-8"))
+        st.download_button(
+            "💾 Download Semua Hasil Evaluasi (JSON)",
+            data=buf,
+            file_name=f"{candidate_id}_all_results.json",
+            mime="application/json"
+        )
+
+        st.success(f"🎉 Semua hasil evaluasi ({len(results_all)} pertanyaan) berhasil diproses & disimpan.")
