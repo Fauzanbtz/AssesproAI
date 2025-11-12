@@ -2,7 +2,7 @@ from datetime import datetime
 
 def compose_hr_json(qspec, transcript, result, meta, source_url, video_path):
     now = datetime.now().astimezone().isoformat()
-    return {
+    base = {
         "qid": qspec["qid"],
         "question_text": qspec["question_text"].get("id") or next(iter(qspec["question_text"].values())),
         "language_selected": result["lang_selected"],
@@ -27,3 +27,9 @@ def compose_hr_json(qspec, transcript, result, meta, source_url, video_path):
         },
         "timestamp": now
     }
+
+    # 🆕 Tambahkan advanced metrics (kalau ada)
+    if "advanced_metrics" in meta:
+        base["asr_advanced"] = meta["advanced_metrics"]
+
+    return base

@@ -21,6 +21,7 @@ ai-interview-assessment/
 │  ├─ nlp_preprocess.py           # cleaning, stopword, slang dict, stemming
 │  ├─ language_router.py          # deteksi bahasa (fastText/langdetect/whisper)
 │  ├─ similarity.py               # Sentence-BERT similarity
+|  ├─ storage.py
 │  ├─ keywords.py                 # keyword coverage (must/nice)
 │  ├─ structure.py                # skor struktur jawaban (intro-body-closing)
 │  ├─ confidence.py               # gabungan ASR_conf, Lang_conf, Agree_conf, Len_conf

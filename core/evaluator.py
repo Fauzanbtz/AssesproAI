@@ -19,7 +19,10 @@ def evaluate_answer(transcript_text: str, qspec: dict, whisper_meta: dict, cfg: 
 
     w = qspec["weights"]
     perf = w["similarity"]*sim + w["keyword_must"]*must_cov + w["keyword_nice"]*nice_cov + w["structure"]*struct
-    conf = confidence_score(whisper_meta, lang_det, sim, must_cov, len(transcript_text.split()), cfg)
+
+    # ✅ Ambil nilai logprob/no_speech dari struktur baru bila ada
+    asr_meta = whisper_meta.get("asr_metrics", whisper_meta)
+    conf = confidence_score(asr_meta, lang_det, sim, must_cov, len(transcript_text.split()), cfg)
 
     return {
         "lang_selected": lang,
@@ -31,3 +34,4 @@ def evaluate_answer(transcript_text: str, qspec: dict, whisper_meta: dict, cfg: 
         "confidence_score": conf,
         "hits": {"must": must_hits, "nice": nice_hits}
     }
+

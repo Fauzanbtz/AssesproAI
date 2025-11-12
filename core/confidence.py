@@ -11,6 +11,9 @@ def geom_mean(vals):
     return float(math.exp(sum(math.log(v) for v in vals)/len(vals)))
 
 def confidence_score(whisper_meta, lang_det, sim, must_cov, length_tokens, cfg):
+    if "asr_metrics" in whisper_meta:
+        whisper_meta = whisper_meta["asr_metrics"]
+        
     asr = asr_confidence(whisper_meta["avg_logprob"], whisper_meta["no_speech_prob"], cfg["confidence"]["asr_weight"])
     langc = lang_det.get("confidence", 0.6)
     agree = max(1e-6, min(1.0, (sim + must_cov)/2))
