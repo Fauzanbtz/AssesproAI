@@ -116,51 +116,67 @@ def _whisper(wav_path, cfg):
 
 
 def transcribe(wav_path, cfg):
-    """Transkripsi audio + analisis statistik & simpan hasil ke JSON."""
+    """Transkripsi audio + analisis statistik & simpan hasil ke JSON dengan segments yang disederhanakan."""
+    import os
+    import json
+    import numpy as np
+    import whisper
+
     print(f"🎧 Memulai transkripsi untuk: {wav_path}")
     model = whisper.load_model(cfg["models"]["whisper_size"])
     result = model.transcribe(str(wav_path), language="en")
 
     text = (result.get("text") or "").strip()
     segments = result.get("segments", [])
-    meta = {
-    "avg_logprob": float(np.mean([float(s.get("avg_logprob", -1.0)) for s in segments])) if segments else -1.0,
-    "no_speech_prob": float(np.mean([float(s.get("no_speech_prob", 0.0)) for s in segments])) if segments else 1.0,
-    "duration_sec": float(segments[-1]["end"]) if segments else 0.0
-    }
 
+    # Hitung meta ASR
+    meta = {
+        "avg_logprob": float(np.mean([float(s.get("avg_logprob", -1.0)) for s in segments])) if segments else -1.0,
+        "no_speech_prob": float(np.mean([float(s.get("no_speech_prob", 0.0)) for s in segments])) if segments else 1.0,
+        "duration_sec": float(segments[-1]["end"]) if segments else 0.0
+    }
 
     # 🔍 Analisis tambahan
     speech_stats = analyze_segments(segments)
     linguistic = analyze_linguistics(text)
     audio_feats = analyze_audio_features(wav_path)
 
-    # 💡 Meta lama tetap ada untuk kompatibilitas dengan evaluator.py
+    # Full meta tetap ada untuk kompatibilitas evaluator
     full_meta = {
-    "asr_metrics": meta,
-    "speech_analysis": speech_stats,
-    "linguistic_features": linguistic,
-    "audio_features": audio_feats,
-    # agar kode lama tetap jalan
-    "avg_logprob": meta["avg_logprob"],
-    "no_speech_prob": meta["no_speech_prob"],
-    "duration_sec": meta["duration_sec"]
+        "asr_metrics": meta,
+        "speech_analysis": speech_stats,
+        "linguistic_features": linguistic,
+        "audio_features": audio_feats,
+        "avg_logprob": meta["avg_logprob"],
+        "no_speech_prob": meta["no_speech_prob"],
+        "duration_sec": meta["duration_sec"]
     }
 
+    # Buat segments versi sederhana
+    simplified_segments = [
+        {
+            "id": s["id"],
+            "start": float(s["start"]),
+            "end": float(s["end"]),
+            "text": s["text"].strip(),
+            "avg_logprob": float(s.get("avg_logprob", 0.0)),
+            "no_speech_prob": float(s.get("no_speech_prob", 0.0))
+        }
+        for s in segments
+    ]
 
-
-    # 💾 Simpan hasil ke file JSON
+    # Simpan hasil ke file JSON
     os.makedirs("tmp/transcripts", exist_ok=True)
     base = os.path.splitext(os.path.basename(wav_path))[0]
     out_path = f"tmp/transcripts/{base}.json"
 
     output_data = {
         "text": text,
-        "segments": segments,
+        "segments": simplified_segments,  # gunakan simplified_segments
         "meta": full_meta
     }
 
-    # pastikan tidak ada float32
+    # Pastikan tidak ada float32 atau float64
     def convert(o):
         if isinstance(o, (np.floating, np.float32, np.float64)):
             return float(o)
@@ -172,4 +188,4 @@ def transcribe(wav_path, cfg):
         json.dump(output_data, f, ensure_ascii=False, indent=2, default=convert)
 
     print(f"✅ Transkrip lengkap disimpan ke: {out_path}")
-    return text, segments, full_meta
+    return text, simplified_segments, full_meta
