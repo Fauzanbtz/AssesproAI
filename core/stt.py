@@ -1,3 +1,11 @@
+import os
+import json
+import re
+import numpy as np
+import librosa
+import whisper
+from datetime import timedelta
+
 def _whisper(wav_path, cfg):
     import whisper
     model = whisper.load_model(cfg["models"]["whisper_size"])
@@ -11,15 +19,6 @@ def _whisper(wav_path, cfg):
     else:
         avg_logprob, ns_prob, dur = -2.0, 1.0, 0.0
     return text, segs, {"avg_logprob": avg_logprob, "no_speech_prob": ns_prob, "duration_sec": dur}
-
-import os
-import json
-import re
-import numpy as np
-import librosa
-import whisper
-from datetime import timedelta
-
 
 # ============================================================
 # 🔹 Helper Functions
@@ -152,7 +151,6 @@ def transcribe(wav_path, cfg):
         "duration_sec": meta["duration_sec"]
     }
 
-    # Buat segments versi sederhana
     simplified_segments = [
         {
             "id": s["id"],
@@ -172,11 +170,10 @@ def transcribe(wav_path, cfg):
 
     output_data = {
         "text": text,
-        "segments": simplified_segments,  # gunakan simplified_segments
+        "segments": simplified_segments,  
         "meta": full_meta
     }
 
-    # Pastikan tidak ada float32 atau float64
     def convert(o):
         if isinstance(o, (np.floating, np.float32, np.float64)):
             return float(o)
@@ -187,5 +184,5 @@ def transcribe(wav_path, cfg):
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(output_data, f, ensure_ascii=False, indent=2, default=convert)
 
-    print(f"✅ Transkrip lengkap disimpan ke: {out_path}")
+    print(f" Transkrip lengkap disimpan ke: {out_path}")
     return text, simplified_segments, full_meta

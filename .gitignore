@@ -8,3 +8,5 @@ tmp/
 data/candidates/*.json
 experiments/
 .env
+transcripts/
+data

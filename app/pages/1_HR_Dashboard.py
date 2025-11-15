@@ -5,7 +5,7 @@ from pathlib import Path
 
 st.set_page_config(page_title="HR Dashboard", layout="wide")
 
-st.title("📊 HR Review Dashboard")
+st.title("HR Review Dashboard")
 
 folder = Path("tmp/transcripts")
 files = sorted(folder.glob("*.json"))
@@ -41,7 +41,7 @@ else:
         sel = st.selectbox("Pilih hasil untuk dilihat:", [d["file"] for d in data])
         if sel:
             j = json.loads((folder / sel).read_text(encoding="utf-8"))
-            st.subheader(f"📄 Detail Hasil: {sel}")
+            st.subheader(f"Detail Hasil: {sel}")
             st.json(j)
     else:
         st.info("Belum ada file JSON dengan struktur lengkap (punya 'scores').")

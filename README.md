@@ -132,3 +132,31 @@ streamlit run app/app.py
 > - Pipeline lengkap: **Video → Audio → Transkrip → Analisis → JSON HR-friendly**.  
 > - Folder `data/samples/` digunakan untuk contoh video dan dataset pengujian.
 > - buat file tmp yang isinya /audio, /transcripts , /videos
+
+
+
+Video (.mp4)
+   ↓
+Audio (16k WAV)
+   ↓
+Whisper STT
+   ↓
+Transcript + Metadata
+   ↓
+ ┌─────────────────────────────┐
+ │  EVALUATOR CORE             │
+ │  ├─ Layer 1: SBERT Similarity│
+ │  ├─ Layer 2: Keyword, Structure, Confidence │
+ │  └─ Layer 3: Semantic Rubric Matching (0–4) │
+ └─────────────────────────────┘
+   ↓
+Performance + Confidence + Rubric Grade
+   ↓
+JSON Output (for HR)
+
+
+| Layer   | Fitur                                     |
+| ------- | ----------------------------------------- |
+| Layer 1 | SBERT similarity, segment-max similarity  |
+| Layer 2 | keyword coverage, structure, token length |
+| Layer 3 | semantic match ke rubric P0..P4           |
