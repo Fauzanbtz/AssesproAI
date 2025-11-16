@@ -10,3 +10,4 @@ experiments/
 .env
 transcripts/
 data
+models/
