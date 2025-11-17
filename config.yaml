@@ -14,7 +14,6 @@ models:
   whisper_backend: "whisper"                 # whisper | faster-whisper
   whisper_size: "medium"
   sbert_name: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-  # alternatif rekomendasi: paraphrase-multilingual-mpnet-base-v2 (lebih akurat)
   langdetect: "en"
 
 scoring:
