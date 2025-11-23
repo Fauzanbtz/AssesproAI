@@ -1,25 +1,26 @@
-# components/multi_question_form.py
-from typing import List, Dict, Any
-from pathlib import Path
-import streamlit as st
+# app/components/multi_question_form.py
 
-def render_multi_question_form(qbank: List[dict]) -> List[Dict[str, Any]]:
+import streamlit as st
+from pathlib import Path
+
+def render_multi_question_form(qbank, max_questions: int = 5):
     """
-    Render form untuk beberapa pertanyaan (maksimal 5 pertama di qbank).
-    Menghasilkan list dict:
+    Render form multi-pertanyaan (link / upload) dan
+    mengembalikan list of dict seperti:
       {
         "qid": str,
         "qspec": dict,
-        "uploaded_file": UploadedFile | None,
+        "upload_file": UploadedFile | None,
         "source_url": str | None,
-        "index": int
+        "video_path": None,   # selalu None, akan diisi di evaluation_runner
       }
     """
     videos_input = []
 
-    for idx, qspec in enumerate(qbank[:5], start=1):
+    for idx, qspec in enumerate(qbank[:max_questions], start=1):
         st.markdown("---")
         st.subheader(f" Pertanyaan {idx}")
+
         st.markdown(
             f"""
             <div style="background-color:#f8f9fa; padding:20px; border-radius:15px; border:1px solid #ddd;">
@@ -31,28 +32,35 @@ def render_multi_question_form(qbank: List[dict]) -> List[Dict[str, Any]]:
         )
 
         tab1, tab2 = st.tabs([f" Link Video {idx}", f" Upload File {idx}"])
-        uploaded_file, source_url = None, None
 
-        # TAB 1 - via Link Video
+        source_url = None
+        upload_file = None
+
+        # Tab 1: link video
         with tab1:
-            url = st.text_input(f"Link Video Pertanyaan {idx}", key=f"url_{idx}")
+            url = st.text_input(
+                f"Link Video Pertanyaan {idx}",
+                key=f"url_{idx}"
+            )
             if url.strip():
-                source_url = url
+                source_url = url.strip()
 
-        # TAB 2 - via Upload File
+        # Tab 2: upload file
         with tab2:
-            uploaded_file = st.file_uploader(
+            f = st.file_uploader(
                 f"Upload Video Jawaban {idx}",
                 type=["mp4", "mov", "webm"],
                 key=f"file_{idx}"
             )
+            if f is not None:
+                upload_file = f
 
         videos_input.append({
             "qid": qspec["qid"],
             "qspec": qspec,
-            "uploaded_file": uploaded_file,  # belum disimpan ke disk
-            "source_url": source_url,
-            "index": idx,
+            "upload_file": upload_file,  # UploadedFile (belum disimpan)
+            "source_url": source_url,    # string URL (bisa None)
+            "video_path": None,          # akan diisi di evaluation_runner
         })
 
     return videos_input

@@ -1,114 +1,81 @@
 # app/components/multi_results.py
-from pathlib import Path
+
+import io
 import json
+from typing import List, Dict
+
+import pandas as pd
 import streamlit as st
 
-from core.downloader import fetch_video_to_local
-from core.media import extract_wav16k
-from core.stt import transcribe
-from core.evaluator import evaluate_answer
-from core.serializer import compose_hr_json
-from core.storage import save_candidate_metadata
 
-from app.components.progress import step
-from app.components.result import show_json_download
-
-def process_all_answers(videos_input, candidate_id: str, cfg: dict):
+def build_summary_table(results_all: List[Dict]) -> pd.DataFrame:
     """
-    Loop semua pertanyaan:
-      - simpan upload ke tmp (kalau ada)
-      - download dari URL (kalau ada)
-      - extract audio
-      - transcribe
-      - evaluate
-      - simpan metadata + whisper results
-    Return: list hasil HR JSON.
+    Bangun DataFrame ringkasan dari list hasil HR (output compose_hr_json).
+    Setiap elemen di results_all adalah dict satu pertanyaan.
     """
-    results_all = []
+    rows = []
+    for idx, item in enumerate(results_all, start=1):
+        qid = item.get("qid")
+        qtext = item.get("question_text", "")[:80]
+        scores = item.get("scores", {})
+        rubric = item.get("rubric", {})
 
-    for entry in videos_input:
-        idx = entry["index"]
-        qspec = entry["qspec"]
-        upload_file = entry["upload_file"]
-        video_path = entry["video_path"]
-        source_url = entry["source_url"]
+        rows.append({
+            "No": idx,
+            "QID": qid,
+            "Question": qtext,
+            "Rubric Point (0–4)": rubric.get("predicted_point"),
+            "Performance Score (0–1)": scores.get("performance_score"),
+            "Avg Logprob": item.get("asr", {}).get("avg_logprob"),
+            "Duration (s)": item.get("asr", {}).get("duration_sec"),
+        })
 
-        if not upload_file and not video_path and not source_url:
-            st.warning(f"Pertanyaan {idx} belum memiliki video, dilewati.")
-            continue
+    df = pd.DataFrame(rows)
+    return df
 
-        # Jika ada file upload, simpan ke tmp/videos
-        if upload_file is not None:
-            tmp_dir = Path(cfg["paths"]["tmp_videos"])
-            tmp_dir.mkdir(parents=True, exist_ok=True)
-            out_path = tmp_dir / upload_file.name
-            out_path.write_bytes(upload_file.read())
-            video_path = out_path
 
-        # Jika hanya ada link, unduh dulu
-        if source_url and not video_path:
-            with step(f"Mengunduh video pertanyaan {idx}..."):
-                video_path = fetch_video_to_local(source_url, cfg)
-
-        with step(f"Memproses audio & transkrip (Pertanyaan {idx})..."):
-            wav = extract_wav16k(video_path, cfg)
-            text, segments, meta = transcribe(wav, cfg)
-
-            # Simpan hasil Whisper ke folder baru
-            whisper_folder = Path("tmp/whisper_results")
-            whisper_folder.mkdir(parents=True, exist_ok=True)
-            whisper_file = whisper_folder / f"{candidate_id}_q{idx}.json"
-
-            whisper_data = {
-                "candidate_id": candidate_id,
-                "question_id": idx,
-                "question": qspec["question_text"]["en"],
-                "transcript": text,
-                "segments": segments,
-                "meta": meta,
-            }
-
-            with open(whisper_file, "w", encoding="utf-8") as f:
-                json.dump(whisper_data, f, ensure_ascii=False, indent=2)
-
-        with step(f"Mengevaluasi jawaban (Pertanyaan {idx})..."):
-            result = evaluate_answer(text, qspec, meta, cfg)
-
-        out = compose_hr_json(qspec, text, result, meta, source_url, video_path)
-        results_all.append(out)
-
-        # Simpan metadata kandidat
-        save_candidate_metadata(
-            candidate_id=candidate_id,
-            question=qspec["question_text"]["en"],
-            recorded_video_url=source_url if source_url else str(video_path),
-            is_video_exist=True
-        )
-
-        st.success(f"Pertanyaan {idx} berhasil dievaluasi dan disimpan untuk kandidat {candidate_id}")
-
-        # Ekspander untuk lihat hasil Whisper
-        with st.expander(f"Transkrip Pertanyaan {idx}"):
-            st.text_area("Transkrip", text, height=200)
-            st.json(meta)
-
-    return results_all
-
-def show_summary_and_download(results_all, candidate_id: str):
+def show_summary_and_download(results_all: List[Dict], candidate_id: str):
     """
-    Tampilkan rekap semua hasil + download JSON (pakai komponen result).
+    Tampilkan ringkasan tabel + JSON download untuk semua pertanyaan.
     """
     if not results_all:
+        st.info("Belum ada hasil evaluasi untuk ditampilkan.")
         return
 
-    st.markdown("---")
-    st.subheader("Rekapitulasi Hasil Evaluasi Seluruh Pertanyaan")
+    st.markdown("### Rekap Hasil Evaluasi Interview (LLM)")
+
+    # 1) Tabel ringkasan
+    df = build_summary_table(results_all)
+    st.dataframe(df, use_container_width=True)
+
+    # 2) Detail alasan rubric per pertanyaan
+    st.markdown("#### Detail Penilaian per Pertanyaan")
+    for idx, item in enumerate(results_all, start=1):
+        rubric = item.get("rubric", {})
+        with st.expander(f"Q{idx:02d} – {item.get('question_text','')[:70]}"):
+            st.write(f"Skor LLM (0–4): **{rubric.get('predicted_point')}**")
+            reason = rubric.get("reason") or "Tidak ada alasan dari LLM."
+            st.write("Alasan:")
+            st.write(reason)
+            st.write("Transkrip:")
+            st.write(item.get("transcript", ""))
+
+    # 3) JSON full + download
+    st.markdown("#### JSON Lengkap (Untuk HR / Integrasi API)")
 
     all_json = {
         "candidateId": candidate_id,
         "totalQuestions": len(results_all),
-        "results": results_all
+        "results": results_all,
     }
+    st.json(all_json)
 
-    # Bisa pakai komponen yang sudah ada
-    show_json_download(all_json, filename=f"{candidate_id}_all_results.json")
+    buf = io.BytesIO(json.dumps(all_json, ensure_ascii=False, indent=2).encode("utf-8"))
+    st.download_button(
+        "Download Semua Hasil Evaluasi (JSON)",
+        data=buf,
+        file_name=f"{candidate_id}_all_results.json",
+        mime="application/json",
+    )
+
+    st.success(f"Semua hasil evaluasi ({len(results_all)} pertanyaan) berhasil diproses & disimpan.")

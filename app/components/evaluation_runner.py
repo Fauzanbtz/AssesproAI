@@ -1,4 +1,5 @@
-# components/evaluation_runner.py
+# app/components/evaluation_runner.py
+
 from pathlib import Path
 import json
 import streamlit as st
@@ -11,54 +12,57 @@ from core.serializer import compose_hr_json
 from core.storage import save_candidate_metadata
 
 from components.progress import step
-from components.result import show_json_download
 
 
 def process_all_answers(videos_input, candidate_id: str, cfg: dict):
     """
-    Jalankan pipeline untuk semua pertanyaan:
-      - simpan upload ke tmp/videos (jika ada)
-      - download dari URL (jika ada)
-      - extract audio
-      - transcribe
-      - evaluate
-      - simpan hasil Whisper per-pertanyaan
-      - simpan metadata kandidat
+    videos_input: list of dict dari render_multi_question_form(qbank), contoh item:
+      {
+        "qid": "Q01",
+        "qspec": {...},
+        "upload_file": <UploadedFile | None>,
+        "source_url": "<str | None>"
+      }
 
-    Return: list hasil HR JSON (per pertanyaan).
+    Fungsi ini akan:
+      - simpan upload file ke tmp/videos jika ada
+      - atau download dari link kalau hanya ada URL
+      - extract audio, transcribe Whisper
+      - evaluasi dengan core.evaluator (LLM)
+      - susun output JSON HR per pertanyaan
     """
     results_all = []
 
-    for entry in videos_input:
-        idx = entry["index"]
+    for idx, entry in enumerate(videos_input, start=1):
         qspec = entry["qspec"]
-        uploaded_file = entry["uploaded_file"]
-        source_url = entry["source_url"]
+        source_url = entry.get("source_url")
+        upload_file = entry.get("upload_file")
+        video_path = entry.get("video_path")  # mungkin None, tidak wajib ada
 
-        video_path = None
+        # 1) Jika user upload file → simpan ke tmp/videos
+        if upload_file is not None and video_path is None:
+            tmp_dir = Path(cfg["paths"]["tmp_videos"])
+            tmp_dir.mkdir(parents=True, exist_ok=True)
+            tmp_path = tmp_dir / upload_file.name
+            tmp_path.write_bytes(upload_file.read())
+            video_path = tmp_path
 
-        if not uploaded_file and not source_url:
+        # 2) Kalau tidak ada file dan tidak ada URL → skip
+        if not video_path and not source_url:
             st.warning(f"Pertanyaan {idx} belum memiliki video, dilewati.")
             continue
 
-        # jika ada file upload, simpan dulu ke tmp/videos
-        if uploaded_file is not None:
-            tmp_dir = Path(cfg["paths"]["tmp_videos"])
-            tmp_dir.mkdir(parents=True, exist_ok=True)
-            out_path = tmp_dir / uploaded_file.name
-            out_path.write_bytes(uploaded_file.read())
-            video_path = out_path
-
-        # jika hanya URL, download dulu
+        # 3) Kalau hanya ada URL → download dulu
         if source_url and not video_path:
             with step(f"Mengunduh video pertanyaan {idx}..."):
                 video_path = fetch_video_to_local(source_url, cfg)
 
-        # extract audio + transcribe
+        # 4) Extract audio + transkripsi
         with step(f"Memproses audio & transkrip (Pertanyaan {idx})..."):
             wav = extract_wav16k(video_path, cfg)
             text, segments, meta = transcribe(wav, cfg)
 
+            # simpan hasil Whisper untuk tab Whisper Accuracy
             whisper_folder = Path("tmp/whisper_results")
             whisper_folder.mkdir(parents=True, exist_ok=True)
             whisper_file = whisper_folder / f"{candidate_id}_q{idx}.json"
@@ -75,46 +79,22 @@ def process_all_answers(videos_input, candidate_id: str, cfg: dict):
             with open(whisper_file, "w", encoding="utf-8") as f:
                 json.dump(whisper_data, f, ensure_ascii=False, indent=2)
 
-        # evaluasi jawaban
-        with step(f"Mengevaluasi jawaban (Pertanyaan {idx})..."):
+        # 5) Evaluasi dengan LLM
+        with step(f"Mengevaluasi jawaban (Pertanyaan {idx}) dengan LLM..."):
             result = evaluate_answer(text, qspec, meta, cfg)
 
+        # 6) Susun JSON HR-friendly
         out = compose_hr_json(qspec, text, result, meta, source_url, video_path)
         results_all.append(out)
 
-        # simpan metadata kandidat (list video yang sudah diupload/diambil)
+        # 7) Simpan metadata kandidat (untuk integrasi ke sistem luar)
         save_candidate_metadata(
             candidate_id=candidate_id,
             question=qspec["question_text"]["en"],
             recorded_video_url=source_url if source_url else str(video_path),
-            is_video_exist=True
+            is_video_exist=True,
         )
 
         st.success(f"Pertanyaan {idx} berhasil dievaluasi dan disimpan untuk kandidat {candidate_id}")
 
-        # ekspander untuk lihat hasil Whisper
-        with st.expander(f"Transkrip Pertanyaan {idx}"):
-            st.text_area("Transkrip", text, height=200)
-            st.json(meta)
-
     return results_all
-
-
-def show_summary_and_download(results_all, candidate_id: str):
-    """
-    Tampilkan rekap semua hasil dan tombol download JSON.
-    """
-    if not results_all:
-        return
-
-    st.markdown("---")
-    st.subheader("Rekapitulasi Hasil Evaluasi Seluruh Pertanyaan")
-
-    all_json = {
-        "candidateId": candidate_id,
-        "totalQuestions": len(results_all),
-        "results": results_all
-    }
-
-    # gunakan komponen result yang sudah kamu punya
-    show_json_download(all_json, filename=f"{candidate_id}_all_results.json")
