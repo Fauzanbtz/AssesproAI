@@ -1,353 +1,41 @@
-- qid: number1
-  question_text:
-    en: "Can you share any specific challenges you faced while working on certification and how you overcame them?"
-  languages_supported: ["en"]
-
-  answers:
-    en:
-      ideal: >
-        The candidate should describe a specific challenge faced during the Dev Certification Machine Learning (DCML),
-        detailing the debugging or model improvement steps they performed. The explanation should include technical
-        clarity—such as resolving shape mismatch, addressing training instability, fixing input preprocessing,
-        using tools like TensorBoard, EarlyStopping, or improving data pipelines.
-
-      keywords:
-        must:
-          - "TensorFlow"
-          - "debugging"
-          - "validation loss"
-          - "overfitting"
-          - "TensorBoard"
-          - "EarlyStopping"
-          - "data preprocessing"
-        nice:
-          - "training instability"
-          - "gradients"
-          - "loss curves"
-          - "input dimensions"
-          - "learning rate"
-          - "deep learning workflow"
-
-  rubric:
-    4: >
-      Provides a detailed, specific challenge encountered during the DCML certification, including how it was analyzed
-      and solved using proper machine learning techniques or debugging tools. The explanation must be clear,
-      technically well-structured, and show strong reasoning and reflection.
-    3: >
-      Describes at least one concrete challenge from the certification and explains the solution with reasonable clarity,
-      though with limited detail or missing some depth.
-    2: >
-      Mentions general or vague difficulties without specific technical depth or without directly referring to the
-      certification process.
-    1: >
-      Provides very unclear, minimal, or overly generic content with almost no technical relevance.
-    0: >
-      No meaningful answer is provided or completely off-topic.
-
-  weights:
-    similarity: 0.55
-    keyword_must: 0.30
-    keyword_nice: 0.10
-    structure: 0.05
-
-  pass_threshold: 0.70
-
-  llm:
-    context: >
-      This question must be evaluated specifically within the context of the Dev Certification Machine Learning (DCML).
-      Answers that discuss unrelated jobs, other certifications, general ML experience, or external projects—without
-      connecting them to the DCML certification—should not receive a high score.
-
-    hard_constraints: >
-      To receive a score of 3 or 4, the candidate MUST:
-      - Clearly refer to the DCML certification context.
-      - Describe ONE concrete challenge that occurred DURING the certification.
-      - Provide a clear explanation of HOW the issue was resolved (debugging, TensorFlow techniques, tooling, etc.).
-      
-      If the answer is well-written but mostly unrelated to the DCML certification,
-      you MUST limit the score to a maximum of 2 regardless of fluency or technical depth.
-
-
-- qid: Q02
-  question_text:
-    en: "Can you describe your experience with transfer learning in TensorFlow? How did it benefit your projects?"
-  languages_supported: ["en"]
-
-  answers:
-    en:
-      ideal: >
-        The candidate should explain how transfer learning was applied in their projects using TensorFlow,
-        mentioning specific pretrained models (such as MobileNetV2, EfficientNet, or VGG-16/VGG-19) and how
-        these were used via tf.keras.applications or similar APIs. A strong answer describes concrete use cases
-        (e.g., image classification with limited data) and measurable improvements, such as reduced training time,
-        faster convergence, or higher accuracy compared to training a model from scratch.
-
-      keywords:
-        must:
-          - "transfer learning"
-          - "TensorFlow"
-          - "pretrained model"
-          - "MobileNetV2"
-          - "EfficientNet"
-          - "VGG-16"
-          - "accuracy"
-          - "training time"
-        nice:
-          - "limited data"
-          - "image classification"
-          - "fine-tuning"
-          - "feature extractor"
-          - "generalization"
-
-  rubric:
-    4: >
-      Offers a detailed description of personal experience using transfer learning in TensorFlow, including
-      specific pretrained models, project context, and clear explanation of the benefits (e.g., improved
-      accuracy, faster training, better generalization). The response is technically sound, well-organized,
-      and clearly connects transfer learning choices to project outcomes.
-    3: >
-      Describes personal experience with transfer learning in TensorFlow, including at least one example
-      project and some explanation of the benefits, but the level of detail or depth is limited.
-    2: >
-      Mentions transfer learning or TensorFlow in general terms with minimal detail, without clearly explaining
-      how it was used in a project or what benefits it brought.
-    1: >
-      Provides a very vague, minimal, or unclear explanation that shows little understanding of transfer learning.
-    0: >
-      No meaningful answer is provided or the answer is completely off-topic.
-
-  weights:
-    similarity: 0.55
-    keyword_must: 0.30
-    keyword_nice: 0.10
-    structure: 0.05
-
-  pass_threshold: 0.70
-
-  llm:
-    context: >
-      This question is specifically about the candidate's real, personal experience using transfer learning
-      in TensorFlow on actual projects. Answers that only define transfer learning in theory, or that describe
-      generic machine learning experience without concrete TensorFlow project examples, should not receive
-      a high score.
-    hard_constraints: >
-      To receive a score of 3 or 4, the answer MUST:
-      - Explicitly mention transfer learning in TensorFlow.
-      - Refer to at least one real project where transfer learning was applied.
-      - Clearly explain what benefits transfer learning brought to that project
-        (such as improved accuracy, reduced training time, or better generalization).
-
-      If the answer is mostly theoretical, very generic, or not clearly tied to real TensorFlow projects,
-      you MUST limit the score to a maximum of 2, even if the explanation sounds technically correct.
-
-
-- qid: Q03
-  question_text:
-    en: "Describe a complex TensorFlow model you have built and the steps you took to ensure its accuracy and efficiency."
-  languages_supported: ["en"]
-
-  answers:
-    en:
-      ideal: >
-        The candidate should describe a complex TensorFlow model they built (for example, a CNN for images,
-        a multi-input model combining images and metadata, or a deep sequence model) and explain the model's
-        architecture and purpose. A strong answer also describes steps to ensure accuracy and efficiency:
-        data preprocessing and normalization, regularization (dropout, L2), hyperparameter tuning,
-        learning rate scheduling, monitoring metrics, and possibly using tools like TensorBoard or
-        TensorFlow Profiler to optimize performance.
-      keywords:
-        must:
-          - "TensorFlow"
-          - "model architecture"
-          - "normalization"
-          - "dropout"
-          - "learning rate"
-          - "optimization"
-          - "accuracy"
-        nice:
-          - "CNN"
-          - "multi-input"
-          - "augmentation"
-          - "TensorBoard"
-          - "Profiler"
-          - "regularization"
-          - "early stopping"
-
-  rubric:
-    4: >
-      Provides a detailed description of a complex TensorFlow model, including its architecture and purpose,
-      and clearly explains multiple steps taken to improve accuracy and efficiency (such as preprocessing,
-      normalization, dropout, tuning learning rate, callbacks, or profiling). Demonstrates strong understanding
-      of TensorFlow and ML best practices.
-    3: >
-      Describes a specific TensorFlow model with some technical details and mentions a few steps taken
-      to improve accuracy and efficiency, but the explanation is not very deep or misses some aspects.
-    2: >
-      Talks about building a model in TensorFlow in general terms without concrete architecture details
-      or without clearly describing how accuracy and efficiency were ensured.
-    1: >
-      Provides a minimal, vague, or unclear response with little relevant technical content.
-    0: >
-      No meaningful answer is provided or totally unrelated.
-
-  weights:
-    similarity: 0.55
-    keyword_must: 0.30
-    keyword_nice: 0.10
-    structure: 0.05
-
-  pass_threshold: 0.70
-
-  llm:
-    context: >
-      This question should be evaluated based on whether the candidate can describe a real, non-trivial
-      TensorFlow model they have actually built and how they improved its performance and efficiency.
-      Answers that speak only in very high-level theory, or that do not describe any specific model,
-      are not considered strong.
-    hard_constraints: >
-      To receive a score of 3 or 4, the answer MUST:
-      - Describe a specific TensorFlow model (not just “a model” in abstract).
-      - Include some detail about the architecture (e.g., CNN layers, dense layers, multi-input, etc.).
-      - Explain at least two concrete steps taken to improve accuracy and/or efficiency
-        (e.g., normalization, dropout, learning rate schedule, callbacks, TensorBoard, profiling).
-
-      If the answer is very generic and does NOT clearly describe a real model and concrete optimization steps,
-      you MUST limit the score to a maximum of 2.
-
-
-- qid: Q04
-  question_text:
-    en: "Explain how to implement dropout in a TensorFlow model and the effect it has on training."
-  languages_supported: ["en"]
-
-  answers:
-    en:
-      ideal: >
-        The candidate should explain how to add a Dropout layer in a TensorFlow / Keras model
-        (for example tf.keras.layers.Dropout(0.5) between dense or convolutional layers),
-        describe that dropout randomly deactivates a fraction of neurons during training,
-        and explain how this helps reduce overfitting and improve generalization. A strong answer
-        may also mention choosing dropout rates and the trade-off between underfitting and overfitting.
-      keywords:
-        must:
-          - "dropout"
-          - "TensorFlow"
-          - "tf.keras.layers.Dropout"
-          - "overfitting"
-          - "generalization"
-        nice:
-          - "regularization"
-          - "dropout rate"
-          - "training vs inference"
-          - "batch normalization"
-
-  rubric:
-    4: >
-      Provides a clear, technically accurate explanation of how to implement dropout in TensorFlow (including
-      the Dropout layer usage), and explains its effect on training, especially how it prevents overfitting
-      and improves generalization. Shows good conceptual understanding.
-    3: >
-      Explains dropout implementation with some specifics (e.g., mentioning Dropout layer) and describes
-      the general effect on training (reducing overfitting), but in less detail or with minor gaps.
-    2: >
-      Mentions dropout in a general way but lacks clear technical explanation of how to implement it
-      or how it affects training.
-    1: >
-      Very minimal or vague explanation with little relevant technical content.
-    0: >
-      No meaningful answer is provided or answer is unrelated.
-
-  weights:
-    similarity: 0.55
-    keyword_must: 0.30
-    keyword_nice: 0.10
-    structure: 0.05
-
-  pass_threshold: 0.70
-
-  llm:
-    context: >
-      This question focuses on whether the candidate understands dropout as a regularization technique
-      in TensorFlow and can explain both how to implement it and why it is used.
-      Answers that only say “dropout reduces overfitting” without explaining implementation details
-      or the mechanism are weaker.
-    hard_constraints: >
-      To receive a score of 3 or 4, the answer MUST:
-      - Mention the Dropout layer in TensorFlow / Keras (e.g. tf.keras.layers.Dropout or similar).
-      - Explain that dropout randomly “turns off” neurons (or activations) during training.
-      - Connect this behavior to reducing overfitting and improving generalization.
-
-      If the answer only vaguely states that dropout “helps training” without implementation details
-      or clear explanation of the effect, you MUST limit the score to a maximum of 2.
-
-
 - qid: Q05
   question_text:
-    en: "Describe the process of building a convolutional neural network (CNN) using TensorFlow for image classification."
-  languages_supported: ["en"]
-
+    en: "Describe the process of building a convolutional neural network (CNN) using\n\
+      \ TensorFlow for image classification."
+  languages_supported:
+  - en
   answers:
     en:
-      ideal: >
-        The candidate should describe the end-to-end process of building a CNN in TensorFlow for image classification:
-        preparing and preprocessing image data (resize, normalization, train/val split, optional augmentation),
-        defining CNN layers (Conv2D, activation such as ReLU, MaxPooling, Flatten, Dense, Dropout),
-        compiling the model (e.g., optimizer Adam, loss like categorical crossentropy, relevant metrics),
-        training with validation data, and evaluating performance. Mentioning tools like TensorBoard
-        or callbacks (EarlyStopping, ModelCheckpoint) is a plus.
+      ideal: ''
       keywords:
-        must:
-          - "CNN"
-          - "TensorFlow"
-          - "Conv2D"
-          - "ReLU"
-          - "MaxPooling"
-          - "Flatten"
-          - "Dense"
-          - "Adam"
-          - "crossentropy"
-        nice:
-          - "data augmentation"
-          - "train/validation split"
-          - "normalization"
-          - "TensorBoard"
-          - "dropout"
-          - "image classification"
-
+        must: []
+        nice: []
   rubric:
-    4: >
-      Provides a detailed, step-by-step description of building a CNN in TensorFlow for image classification,
-      covering data preprocessing, key CNN layers, model compilation, training, and evaluation. The explanation
-      is clear, logically ordered, and shows strong understanding of the full workflow.
-    3: >
-      Describes the CNN building process with the main steps (architecture, compile, train) but may omit some
-      details (such as preprocessing or evaluation) or be somewhat less structured.
-    2: >
-      Gives a general mention of CNN or TensorFlow with limited detail about the full process of building
-      and training the model.
-    1: >
-      Very minimal, vague, or unclear description with little technical relevance.
-    0: >
-      No meaningful answer is provided or answer is unrelated.
+    0: No meaningful answer is provided or answer is unrelated.
+    1: Very minimal, vague, or unclear description with little technical relevance.
+    2: 'Gives a general mention of CNN or TensorFlow with limited detail about the
 
+      full process of building and training the model.'
+    3: "Gives a general mention of CNN or TensorFlow with limited detail about the\n\
+      \ full process of building and training the model."
+    4: "Provides a detailed, step-by-step description of building a CNN in TensorFlow\n\
+      \    for image classification, covering data preprocessing, key CNN layers,\
+      \ model\n     compilation, training, and evaluation. The explanation is clear,\
+      \ logically ordered,\n shows strong understanding of the full workflow."
   weights:
     similarity: 0.55
-    keyword_must: 0.30
-    keyword_nice: 0.10
+    keyword_must: 0.3
+    keyword_nice: 0.1
     structure: 0.05
-
-  pass_threshold: 0.70
-
+  pass_threshold: 0.7
   llm:
-    context: >
-      This question is about the candidate's understanding of the end-to-end workflow of building a CNN
-      in TensorFlow specifically for image classification tasks. Answers that only explain CNNs in theory
-      without mentioning TensorFlow workflow or practical steps are weaker.
-    hard_constraints: >
-      To receive a score of 3 or 4, the answer MUST:
-      - Explicitly mention building a CNN using TensorFlow / Keras.
-      - Cover the main stages: data preprocessing, defining CNN layers, compiling, and training.
-      - Make it clear that the task is image classification (not some unrelated use case).
-
-      If the answer is very high-level theory about CNNs without TensorFlow-specific steps,
-      or does not clearly describe an image classification workflow, you MUST limit the score to a maximum of 2.
+    context: "context: This question is about the candidate's understanding of the\
+      \ end-to-end workflow of building a CNN in TensorFlow specifically for image\
+      \ classification tasks. Answers that only explain CNNs in theory without mentioning\
+      \ TensorFlow\n workflow or practical steps are weaker."
+    hard_constraints: "Explicitly mention building a CNN using TensorFlow / Keras.\
+      \ - Cover the main stages: data   preprocessing, defining CNN layers, compiling,\
+      \ and training. - Make it clear that the task is image classification (not some\
+      \ unrelated use case).\n\n  If the answer is very high-level theory about CNNs\
+      \ without TensorFlow-specific\n steps, or does not clearly describe an image\
+      \ classification workflow, you MUST\nlimit the score to a maximum of 2.'"
