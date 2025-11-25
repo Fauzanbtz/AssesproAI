@@ -4,10 +4,6 @@ from pathlib import Path
 import pandas as pd
 
 def show_whisper_accuracy_results(folder_path: str):
-    """
-    Menampilkan hasil akurasi Whisper dari file JSON yang tersimpan di folder.
-    Folder default: tmp/whisper_results/
-    """
     st.header("📊 Whisper Accuracy Results")
 
     folder = Path(folder_path)
@@ -50,17 +46,14 @@ def show_whisper_accuracy_results(folder_path: str):
 
     df = pd.DataFrame(data_rows)
 
-    # ✅ Tampilkan tabel hasil Whisper
     st.dataframe(df, use_container_width=True)
 
-    # ✅ Visualisasi sederhana
-    st.markdown("### 📈 Whisper Confidence Overview")
+    st.markdown("### Whisper Confidence Overview")
     st.bar_chart(df.set_index("QID")[["Avg Logprob", "No Speech Prob"]])
 
-    # ✅ Download seluruh hasil sebagai JSON gabungan
     combined_json = json.dumps(data_rows, ensure_ascii=False, indent=2)
     st.download_button(
-        "💾 Download All Whisper Results (JSON)",
+        " Download All Whisper Results (JSON)",
         data=combined_json,
         file_name="whisper_results_summary.json",
         mime="application/json"

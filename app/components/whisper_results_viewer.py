@@ -4,9 +4,6 @@ from pathlib import Path
 import pandas as pd
 
 def show_whisper_accuracy_results(folder_path="tmp/whisper_results"):
-    """
-    Menampilkan hasil akurasi whisper dari semua file JSON di folder tmp/whisper_results
-    """
     folder = Path(folder_path)
     folder.mkdir(parents=True, exist_ok=True)
 

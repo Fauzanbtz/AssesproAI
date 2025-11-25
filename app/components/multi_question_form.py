@@ -4,17 +4,7 @@ import streamlit as st
 from pathlib import Path
 
 def render_multi_question_form(qbank, max_questions: int = 5):
-    """
-    Render form multi-pertanyaan (link / upload) dan
-    mengembalikan list of dict seperti:
-      {
-        "qid": str,
-        "qspec": dict,
-        "upload_file": UploadedFile | None,
-        "source_url": str | None,
-        "video_path": None,   # selalu None, akan diisi di evaluation_runner
-      }
-    """
+
     videos_input = []
 
     for idx, qspec in enumerate(qbank[:max_questions], start=1):
@@ -36,19 +26,17 @@ def render_multi_question_form(qbank, max_questions: int = 5):
         source_url = None
         upload_file = None
 
-        # Tab 1: link video
         with tab1:
             url = st.text_input(
-                f"Link Video Pertanyaan {idx}",
+                f"Question Video Link {idx}",
                 key=f"url_{idx}"
             )
             if url.strip():
                 source_url = url.strip()
 
-        # Tab 2: upload file
         with tab2:
             f = st.file_uploader(
-                f"Upload Video Jawaban {idx}",
+                f"Upload Answer Video {idx}",
                 type=["mp4", "mov", "webm"],
                 key=f"file_{idx}"
             )
@@ -58,9 +46,9 @@ def render_multi_question_form(qbank, max_questions: int = 5):
         videos_input.append({
             "qid": qspec["qid"],
             "qspec": qspec,
-            "upload_file": upload_file,  # UploadedFile (belum disimpan)
-            "source_url": source_url,    # string URL (bisa None)
-            "video_path": None,          # akan diisi di evaluation_runner
+            "upload_file": upload_file, 
+            "source_url": source_url,    
+            "video_path": None,         
         })
 
     return videos_input

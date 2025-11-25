@@ -1,5 +1,4 @@
 # app/components/multi_results.py
-
 import io
 import json
 from typing import List, Dict
@@ -9,10 +8,7 @@ import streamlit as st
 
 
 def build_summary_table(results_all: List[Dict]) -> pd.DataFrame:
-    """
-    Bangun DataFrame ringkasan dari list hasil HR (output compose_hr_json).
-    Setiap elemen di results_all adalah dict satu pertanyaan.
-    """
+
     rows = []
     for idx, item in enumerate(results_all, start=1):
         qid = item.get("qid")
@@ -35,20 +31,15 @@ def build_summary_table(results_all: List[Dict]) -> pd.DataFrame:
 
 
 def show_summary_and_download(results_all: List[Dict], candidate_id: str):
-    """
-    Tampilkan ringkasan tabel + JSON download untuk semua pertanyaan.
-    """
     if not results_all:
-        st.info("Belum ada hasil evaluasi untuk ditampilkan.")
+        st.info("No evaluation results available to display.")
         return
 
-    st.markdown("### Rekap Hasil Evaluasi Interview (LLM)")
+    st.markdown("### Interview Evaluation Summary")
 
-    # 1) Tabel ringkasan
     df = build_summary_table(results_all)
     st.dataframe(df, use_container_width=True)
 
-    # 2) Detail alasan rubric per pertanyaan
     st.markdown("#### Detail Penilaian per Pertanyaan")
     for idx, item in enumerate(results_all, start=1):
         rubric = item.get("rubric", {})
@@ -60,8 +51,7 @@ def show_summary_and_download(results_all: List[Dict], candidate_id: str):
             st.write("Transkrip:")
             st.write(item.get("transcript", ""))
 
-    # 3) JSON full + download
-    st.markdown("#### JSON Lengkap (Untuk HR / Integrasi API)")
+    st.markdown("#### JSON Lengkap ")
 
     all_json = {
         "candidateId": candidate_id,

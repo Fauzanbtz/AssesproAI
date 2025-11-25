@@ -6,16 +6,12 @@ from pathlib import Path
 import pandas as pd
 from typing import List, Dict, Any
 
-# ================
-# Config / Paths
-# ================
-st.set_page_config(page_title="HR Dashboard — Question Bank Manager", layout="wide")
-ROOT_DIR = Path(__file__).resolve().parents[2]  # AssesproAI root
+
+st.set_page_config(page_title="HR Dashboard", layout="wide")
+ROOT_DIR = Path(__file__).resolve().parents[2]  
 QBANK_PATH = ROOT_DIR / "data" / "question_bank.yaml"
 
-# ================
-# Helpers
-# ================
+# Helper functions kali butuh
 def ensure_data_folder():
     (ROOT_DIR / "data").mkdir(parents=True, exist_ok=True)
 
@@ -95,13 +91,9 @@ def download_yaml_bytes(qbank: List[Dict[str, Any]]) -> bytes:
     payload = yaml.safe_dump(qbank, sort_keys=False, allow_unicode=True)
     return payload.encode("utf-8")
 
-# ============================
-# UI: Page header & controls
-# ============================
-st.title("HR Review Dashboard — Question Bank Manager")
-st.markdown("Kelola question bank (YAML). Menambahkan, mengedit, menghapus, export/import.")
+st.title("HR Dashboard ")
+st.markdown("Manage a question bank (YAML). Add, edit, delete, export/import.")
 
-# Top actions: Download / Upload (replace)
 col_top_left, col_top_right = st.columns([3,1])
 
 qbank = load_qbank()
@@ -111,13 +103,13 @@ with col_top_right:
         st.rerun()
 
     st.download_button(
-        label="⬇️ Download YAML",
+        label="⬇ Download YAML",
         data=download_yaml_bytes(qbank),
         file_name="question_bank.yaml",
         mime="application/x-yaml"
     )
 
-    uploaded = st.file_uploader("📤 Import YAML (replace)", type=["yaml","yml"], key="import_yaml")
+    uploaded = st.file_uploader(" Import YAML (replace)", type=["yaml","yml"], key="import_yaml")
     if uploaded is not None:
         try:
             content = uploaded.read().decode("utf-8")
@@ -132,29 +124,25 @@ with col_top_right:
         except Exception as e:
             st.error(f"Gagal memuat YAML: {e}")
 
-# ============================
-# Summary table
-# ============================
-st.subheader("Ringkasan Question Bank")
+
+st.subheader("Question Bank summary")
 if not qbank:
-    st.info("Belum ada pertanyaan. Silakan tambahkan.")
+    st.info("No questions yet. Please add one.")
 else:
     df = qbank_to_table(qbank)
     st.dataframe(df, use_container_width=True)
 
 st.markdown("---")
 
-# ============================
-# CREATE: Add new full form
-# ============================
-st.header("➕ Tambah Pertanyaan Baru (Form Lengkap)")
+
+st.header("Add New Question")
 
 with st.form(key="create_form"):
     c1, c2 = st.columns([2,4])
     with c1:
         new_qid = st.text_input("QID")
     with c2:
-        new_question = st.text_area("Question Text (English)", height=80)
+        new_question = st.text_area("Question Text ", height=80)
 
     st.markdown("**Rubric (0 - 4)**")
     new_rubric = {}
@@ -167,10 +155,10 @@ with st.form(key="create_form"):
     new_llm_context = st.text_area("LLM Context", height=120)
     new_llm_constraints = st.text_area("LLM Hard Constraints", height=80)
 
-    submitted = st.form_submit_button("Tambah Pertanyaan")
+    submitted = st.form_submit_button("Add Question", help=None)
     if submitted:
         if not new_qid.strip():
-            st.error("QID tidak boleh kosong.")
+            st.error("QID cannot be empty.")
         else:
             new_item = {
                 "qid": new_qid.strip(),
@@ -184,25 +172,22 @@ with st.form(key="create_form"):
             }
             qbank.append(new_item)
             save_qbank(qbank)
-            st.success(f"Pertanyaan {new_qid} berhasil ditambahkan.")
+            st.success(f"Question {new_qid} successfully added.")
             st.rerun()
 
 st.markdown("---")
 
-# ============================
-# READ / UPDATE / DELETE per question
-# ============================
-st.header("✏️ Edit / Hapus Pertanyaan")
+st.header(" Edit / Delete Question")
 
 if not qbank:
-    st.info("Tidak ada pertanyaan untuk diedit.")
+    st.info("No questions to edit or delete.")
 else:
     qids = [q.get("qid", "") for q in qbank]
-    sel_qid = st.selectbox("Pilih QID untuk edit/hapus", qids, index=0)
+    sel_qid = st.selectbox("Select a QID to edit/delete", qids, index=0)
     sel_idx = qids.index(sel_qid)
     sel_q = qbank[sel_idx]
 
-    # ---------- EDIT FORM (inside st.form) ----------
+    # ---------- EDIT FORM ----------
     with st.form(key=f"edit_form_{sel_qid}"):
         st.subheader(f"Edit: {sel_qid}")
         eqid = st.text_input("QID", sel_q.get("qid", ""), key=f"eqid_{sel_qid}")
@@ -222,7 +207,7 @@ else:
         econtext = st.text_area("LLM Context", sel_q.get("llm", {}).get("context", ""), height=120, key=f"econtext_{sel_qid}")
         econst = st.text_area("LLM Hard Constraints", sel_q.get("llm", {}).get("hard_constraints", ""), height=80, key=f"econst_{sel_qid}")
 
-        save_pressed = st.form_submit_button("💾 Simpan Perubahan")
+        save_pressed = st.form_submit_button(" Simpan Perubahan")
 
     if save_pressed:
         if not eqid.strip():
@@ -236,33 +221,30 @@ else:
             st.success("Perubahan disimpan.")
             st.rerun()
 
-    # ---------- DELETE (outside the form) ----------
     delete_key = f"delete_state_{sel_qid}"
     
-    # jika tombol hapus ditekan
-    if st.button("🗑 Hapus Pertanyaan", key=f"delete_btn_{sel_qid}"):
+    if st.button(" Delete Question", key=f"delete_btn_{sel_qid}"):
         st.session_state[delete_key] = True
     
-    # kalau sedang dalam mode konfirmasi
     if st.session_state.get(delete_key, False):
-        st.warning(f"Yakin ingin menghapus pertanyaan **{sel_qid}**?")
+        st.warning(f"Are you sure you want to delete the question? **{sel_qid}**?")
         col_c1, col_c2 = st.columns(2)
     
         with col_c1:
-            delete_yes = st.button("Ya, Hapus", key=f"yes_delete_{sel_qid}")
+            delete_yes = st.button("Yes, Delete", key=f"yes_delete_{sel_qid}")
     
         with col_c2:
-            delete_no = st.button("Batal", key=f"no_delete_{sel_qid}")
+            delete_no = st.button("Cancel", key=f"no_delete_{sel_qid}")
     
         if delete_yes:
             qbank = [q for q in qbank if q.get("qid") != sel_qid]
             save_qbank(qbank)
-            st.success("Pertanyaan berhasil dihapus.")
+            st.success("Question successfully deleted.")
             st.session_state[delete_key] = False
             st.rerun()
     
         if delete_no:
-            st.info("Dibatalkan.")
+            st.info("Canceled.")
             st.session_state[delete_key] = False
             st.rerun()
 
@@ -272,40 +254,191 @@ st.markdown("---")
 # ============================
 # Candidate JSON viewer (existing)
 # ============================
-st.header("📁 Hasil Evaluasi Kandidat (JSON)")
+# st.header("Hasil Evaluasi Kandidat (JSON)")
 
-folder = ROOT_DIR / "app" / "tmp" / "transcripts"
-if not folder.exists():
-    folder = ROOT_DIR / "tmp" / "transcripts"
+# folder = ROOT_DIR / "app" / "tmp" / "transcripts"
+# if not folder.exists():
+#     folder = ROOT_DIR / "tmp" / "transcripts"
 
-files = sorted(folder.glob("*.json")) if folder.exists() else []
+# files = sorted(folder.glob("*.json")) if folder.exists() else []
+
+# if not files:
+#     st.info("Belum ada hasil JSON dari kandidat.")
+# else:
+#     data = []
+#     for f in files:
+#         try:
+#             j = json.loads(f.read_text(encoding="utf-8"))
+#         except Exception as e:
+#             st.error(f"Gagal membaca {f.name}: {e}")
+#             continue
+#         scores = j.get("scores", {})
+#         data.append({
+#             "file": f.name,
+#             "qid": j.get("qid", "-"),
+#             "similarity": scores.get("similarity", 0.0),
+#             "keyword_must": scores.get("keyword_must_coverage", 0.0),
+#             "performance": scores.get("performance_score", 0.0),
+#             "confidence": scores.get("confidence_score", 0.0),
+#             "lang": j.get("language_selected", "-"),
+#             "timestamp": j.get("timestamp", "-"),
+#         })
+
+#     df = pd.DataFrame(data)
+#     st.dataframe(df, use_container_width=True)
+#     sel = st.selectbox("Pilih hasil untuk dilihat:", df["file"])
+#     if sel:
+#         j = json.loads((folder / sel).read_text(encoding="utf-8"))
+#         st.subheader(f"Detail Hasil: {sel}")
+#         st.json(j)
+
+# st.markdown("---")
+
+# ============================
+# Candidate Answers Viewer (LLM) - HR
+# ============================
+st.header("Candidate Answer Results")
+
+
+def show_candidate_answers_for_hr(
+    candidate_id: str,
+    base_folder: str = "data/candidate_answers",
+):
+    import os 
+
+    root_dir = ROOT_DIR
+    answers_path = root_dir / base_folder / f"{candidate_id}.json"
+
+    st.markdown(f"##### Candidate: `{candidate_id}`")
+
+    if not answers_path.exists():
+        st.warning(f"No candidate answer file found at: `{answers_path}`")
+        return
+
+    # load JSON
+    try:
+        with open(answers_path, "r", encoding="utf-8") as f:
+            data = json.load(f)
+    except Exception as e:
+        st.error(f"Failed to read the candidate answer file.: {e}")
+        return
+
+    results_all = data.get("results", []) or []
+    total_q = data.get("totalQuestions", len(results_all))
+
+    if not results_all:
+        st.info("The candidate_answers file exists, but does not contain any question results.")
+    else:
+        st.caption(f"Total stored questions: **{total_q}**")
+        st.caption(f"Source file: `{answers_path.relative_to(root_dir)}`")
+
+        st.markdown("#### Detailed Answers & Scoring per Question")
+
+        for idx, item in enumerate(results_all, start=1):
+            qid = item.get("qid", f"Q{idx:02d}")
+            qtext = item.get("question_text", "") or ""
+            transcript = item.get("transcript", "") or ""
+
+            # info rubric / LLM
+            rubric = item.get("rubric", {}) or {}
+            score = (
+                rubric.get("predicted_point")
+                or rubric.get("llm_score")
+                or None
+            )
+            reason = (
+                rubric.get("reason")
+                or rubric.get("llm_reason")
+                or "No written explanation "
+            )
+
+            with st.expander(f"{qid} – {qtext[:80]}", expanded=False):
+                st.markdown(f"**Skor LLM (0–4):** `{score}`")
+                st.markdown("**Rubric Explanation / Justification:**")
+                st.write(reason)
+
+                # ASR / Whisper Meta (jika ada)
+                asr = item.get("asr", {})
+                if asr:
+                    st.markdown("**ASR / Whisper Metadata:**")
+                    c1, c2, c3 = st.columns(3)
+                    try:
+                        c1.metric("Avg Logprob", f"{asr.get('avg_logprob', 0.0):.4f}")
+                        c2.metric("No Speech Prob", f"{asr.get('no_speech_prob', 0.0):.4f}")
+                        c3.metric("Duration (s)", f"{asr.get('duration_sec', 0.0):.2f}")
+                    except Exception:
+                        st.json(asr)
+
+                st.markdown("**Candidate Answer Transcript from video:**")
+                st.write(transcript)
+
+                vid_meta = item.get("video_meta", {})
+                if vid_meta:
+                    st.markdown("**Video Metadata:**")
+                    st.json(vid_meta)
+
+    with st.expander("View Raw JSON (Raw Candidate Answers)"):
+        st.json(data)
+
+#remove candidate 
+    st.markdown("---")
+    st.subheader("Manage This Candidates Storage")
+
+    delete_state_key = f"delete_candidate_{candidate_id}"
+
+    if st.button("Delete This Candidate’s Answer File", key=f"btn_delete_{candidate_id}"):
+        st.session_state[delete_state_key] = True
+
+    if st.session_state.get(delete_state_key, False):
+        st.warning(
+            f"You are about to delete the candidate’s evaluation results file. **{candidate_id}** "
+            f"at `{answers_path.relative_to(root_dir)}`.\n\n"
+            "This action cannot be undone."
+        )
+        col_d1, col_d2 = st.columns(2)
+        with col_d1:
+            confirm_yes = st.button("Yes, Delete this file", key=f"confirm_yes_{candidate_id}")
+        with col_d2:
+            confirm_no = st.button("Cancel", key=f"confirm_no_{candidate_id}")
+
+        if confirm_yes:
+            try:
+                if answers_path.exists():
+                    answers_path.unlink()
+                st.success(f"Candidate answer file{candidate_id} sudah dihapus.")
+            except Exception as e:
+                st.error(f"Failed to delete the file.: {e}")
+            st.session_state[delete_state_key] = False
+            st.rerun()
+
+        if confirm_no:
+            st.info("Deletion canceled.")
+            st.session_state[delete_state_key] = False
+
+
+
+ANS_FOLDER = ROOT_DIR / "data" / "candidate_answers"
+ANS_FOLDER.mkdir(parents=True, exist_ok=True)
+
+files = sorted(ANS_FOLDER.glob("*.json"))
 
 if not files:
-    st.info("Belum ada hasil JSON dari kandidat.")
+    st.info("No candidate answer file available.")
 else:
-    data = []
+    options = []
     for f in files:
         try:
             j = json.loads(f.read_text(encoding="utf-8"))
-        except Exception as e:
-            st.error(f"Gagal membaca {f.name}: {e}")
-            continue
-        scores = j.get("scores", {})
-        data.append({
-            "file": f.name,
-            "qid": j.get("qid", "-"),
-            "similarity": scores.get("similarity", 0.0),
-            "keyword_must": scores.get("keyword_must_coverage", 0.0),
-            "performance": scores.get("performance_score", 0.0),
-            "confidence": scores.get("confidence_score", 0.0),
-            "lang": j.get("language_selected", "-"),
-            "timestamp": j.get("timestamp", "-"),
-        })
+            cid = str(j.get("candidateId", f.stem))
+            saved_at = j.get("savedAt", "-")
+            total = j.get("totalQuestions", len(j.get("results", [])))
+            label = f"{cid}  |  {total} pertanyaan  |  {saved_at}"
+            options.append({"id": cid, "label": label})
+        except Exception:
+            options.append({"id": f.stem, "label": f"{f.stem} (invalid json)"})
 
-    df = pd.DataFrame(data)
-    st.dataframe(df, use_container_width=True)
-    sel = st.selectbox("Pilih hasil untuk dilihat:", df["file"])
-    if sel:
-        j = json.loads((folder / sel).read_text(encoding="utf-8"))
-        st.subheader(f"Detail Hasil: {sel}")
-        st.json(j)
+    labels = [o["label"] for o in options]
+    selected_label = st.selectbox("Select a candidate to review:", labels)
+
+    selected = next(o for o in options if o["label"] == selected_label)
+    show_candidate_answers_for_hr(selected["id"])

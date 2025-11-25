@@ -1,7 +1,7 @@
 import json
 from pathlib import Path
 from datetime import datetime
-from typing import Union, Optional, Dict
+from typing import Union, Optional, Dict, List
 
 
 def save_candidate_metadata(
@@ -10,33 +10,13 @@ def save_candidate_metadata(
     question: Optional[str] = None,
     recorded_video_url: Optional[str] = None,
     is_video_exist: bool = True,
-    base_folder: str = "data/candidates"
+    base_folder: str = "data/candidates_metadata"
 ) -> Path:
-    """
-    Menyimpan metadata kandidat dalam format JSON.
-    Bisa dipanggil dengan dua cara:
-    1️⃣ save_candidate_metadata(candidate_id, review_data={...})
-        → Untuk menyimpan semua hasil interview sekaligus.
-    2️⃣ save_candidate_metadata(candidate_id, question="...", recorded_video_url="...", is_video_exist=True)
-        → Untuk menambahkan satu hasil upload video.
-
-    Args:
-        candidate_id (str): ID unik kandidat.
-        review_data (dict, optional): Data lengkap kandidat.
-        question (str, optional): Pertanyaan (untuk single mode).
-        recorded_video_url (str, optional): Path atau URL video.
-        is_video_exist (bool): True jika ada video.
-        base_folder (str): Folder penyimpanan (default "data/candidates").
-
-    Returns:
-        Path: Lokasi file JSON kandidat.
-    """
-
     folder = Path(base_folder)
     folder.mkdir(parents=True, exist_ok=True)
     filepath = folder / f"{candidate_id}.json"
 
-    # Jika mode 1 (pakai review_data dict)
+    # Mode 1 (full review_data → overwrite)
     if review_data is not None:
         full_data = {
             "candidateId": candidate_id,
@@ -48,18 +28,23 @@ def save_candidate_metadata(
         print(f"[storage]  Disimpan (multi-entry) ke {filepath}")
         return filepath
 
-    # Jika mode 2 (single question upload)
-    # Load file lama kalau ada
+    # Mode 2 (append single interview entry)
     if filepath.exists():
         try:
             with open(filepath, "r", encoding="utf-8") as f:
                 data = json.load(f)
         except Exception:
-            data = {"candidateId": candidate_id, "createdAt": datetime.now().isoformat(),
-                    "reviewChecklists": {"project": "", "interviews": []}}
+            data = {
+                "candidateId": candidate_id,
+                "createdAt": datetime.now().isoformat(),
+                "reviewChecklists": {"project": "", "interviews": []}
+            }
     else:
-        data = {"candidateId": candidate_id, "createdAt": datetime.now().isoformat(),
-                "reviewChecklists": {"project": "", "interviews": []}}
+        data = {
+            "candidateId": candidate_id,
+            "createdAt": datetime.now().isoformat(),
+            "reviewChecklists": {"project": "", "interviews": []}
+        }
 
     next_pos = len(data["reviewChecklists"].get("interviews", [])) + 1
     new_entry = {
@@ -76,3 +61,29 @@ def save_candidate_metadata(
 
     print(f"[storage] Disimpan (single entry) ke {filepath}")
     return filepath
+
+
+def save_candidate_answers(
+    candidate_id: str,
+    results_all: List[dict],
+    base_folder: str = "data/candidate_answers"
+) -> Path:
+    """
+    Menyimpan hasil evaluasi lengkap (per-pertanyaan) untuk satu kandidat.
+    """
+    folder = Path(base_folder)
+    folder.mkdir(parents=True, exist_ok=True)
+
+    payload = {
+        "candidateId": candidate_id,
+        "savedAt": datetime.now().isoformat(),
+        "totalQuestions": len(results_all),
+        "results": results_all,
+    }
+
+    out_path = folder / f"{candidate_id}.json"
+    with open(out_path, "w", encoding="utf-8") as f:
+        json.dump(payload, f, ensure_ascii=False, indent=2)
+
+    print(f"[storage] candidate_answers disimpan ke {out_path}")
+    return out_path
