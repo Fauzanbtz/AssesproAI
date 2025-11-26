@@ -115,14 +115,14 @@ with col_top_right:
             content = uploaded.read().decode("utf-8")
             parsed = yaml.safe_load(content)
             if not isinstance(parsed, list):
-                st.error("File YAML harus berisi list (root should be a YAML list of questions).")
+                st.error("The YAML file must contain a list. (root should be a YAML list of questions).")
             else:
                 qbank = normalize_qbank(parsed)
                 save_qbank(qbank)
-                st.success("Question bank berhasil diimpor dan disimpan.")
+                st.success("Question bank has been successfully imported and saved.")
                 st.rerun()
         except Exception as e:
-            st.error(f"Gagal memuat YAML: {e}")
+            st.error(f"Failed to load YAML: {e}")
 
 
 st.subheader("Question Bank summary")
@@ -207,18 +207,18 @@ else:
         econtext = st.text_area("LLM Context", sel_q.get("llm", {}).get("context", ""), height=120, key=f"econtext_{sel_qid}")
         econst = st.text_area("LLM Hard Constraints", sel_q.get("llm", {}).get("hard_constraints", ""), height=80, key=f"econst_{sel_qid}")
 
-        save_pressed = st.form_submit_button(" Simpan Perubahan")
+        save_pressed = st.form_submit_button("Save Changes")
 
     if save_pressed:
         if not eqid.strip():
-            st.error("QID tidak boleh kosong.")
+            st.error("QID cannot be empty.")
         else:
             qbank[sel_idx]["qid"] = eqid.strip()
             qbank[sel_idx]["question_text"]["en"] = eq_text.strip()
             qbank[sel_idx]["rubric"] = {i: (erubric.get(i) or "").strip() for i in range(5)}
             qbank[sel_idx]["llm"] = {"context": (econtext or "").strip(), "hard_constraints": (econst or "").strip()}
             save_qbank(qbank)
-            st.success("Perubahan disimpan.")
+            st.success("Save Changes.")
             st.rerun()
 
     delete_key = f"delete_state_{sel_qid}"
@@ -294,9 +294,7 @@ st.markdown("---")
 
 # st.markdown("---")
 
-# ============================
-# Candidate Answers Viewer (LLM) - HR
-# ============================
+
 st.header("Candidate Answer Results")
 
 
@@ -353,7 +351,7 @@ def show_candidate_answers_for_hr(
             )
 
             with st.expander(f"{qid} – {qtext[:80]}", expanded=False):
-                st.markdown(f"**Skor LLM (0–4):** `{score}`")
+                st.markdown(f"**Score (0-4):** `{score}`")
                 st.markdown("**Rubric Explanation / Justification:**")
                 st.write(reason)
 
@@ -432,7 +430,7 @@ else:
             cid = str(j.get("candidateId", f.stem))
             saved_at = j.get("savedAt", "-")
             total = j.get("totalQuestions", len(j.get("results", [])))
-            label = f"{cid}  |  {total} pertanyaan  |  {saved_at}"
+            label = f"{cid}  |  {total} Question |  {saved_at}"
             options.append({"id": cid, "label": label})
         except Exception:
             options.append({"id": f.stem, "label": f"{f.stem} (invalid json)"})

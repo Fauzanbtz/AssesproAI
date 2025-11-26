@@ -35,7 +35,7 @@ def process_all_answers(videos_input, candidate_id: str, cfg: dict):
             continue
 
         if source_url and not video_path:
-            with step(f"Mengunduh video pertanyaan {idx}..."):
+            with step(f"Downloading the question video {idx}..."):
                 video_path = fetch_video_to_local(source_url, cfg)
 
         with step(f"Processing audio & transcript (Question{idx})..."):

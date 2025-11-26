@@ -9,7 +9,7 @@ def render_multi_question_form(qbank, max_questions: int = 5):
 
     for idx, qspec in enumerate(qbank[:max_questions], start=1):
         st.markdown("---")
-        st.subheader(f" Pertanyaan {idx}")
+        st.subheader(f" Question {idx}")
 
         st.markdown(
             f"""
@@ -21,7 +21,7 @@ def render_multi_question_form(qbank, max_questions: int = 5):
             unsafe_allow_html=True
         )
 
-        tab1, tab2 = st.tabs([f" Link Video {idx}", f" Upload File {idx}"])
+        tab1, tab2 = st.tabs([f" Video Link {idx}", f" Upload File {idx}"])
 
         source_url = None
         upload_file = None

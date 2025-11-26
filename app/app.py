@@ -3,11 +3,8 @@ import sys
 from pathlib import Path
 import streamlit as st
 
-# ======================================
-# Setup path ke root project
-# ======================================
 ROOT_DIR = Path(__file__).resolve().parent.parent
-APP_DIR = Path(__file__).resolve().parent   # folder tempat app.py berada
+APP_DIR = Path(__file__).resolve().parent   
 
 sys.path.append(str(ROOT_DIR))
 
@@ -17,9 +14,6 @@ from components.multi_question_form import render_multi_question_form
 from components.evaluation_runner import process_all_answers
 from core.storage import save_candidate_answers
 
-# ======================================
-# Konfigurasi Streamlit
-# ======================================
 st.set_page_config(page_title="Assespro AI ", layout="wide")
 
 logo_path = APP_DIR / "Assespro.jpg"
@@ -30,9 +24,6 @@ else:
 
 cfg = load_config(str(ROOT_DIR / "config.yaml"))
 
-# ======================================
-# FUNCTION: Selalu load question bank setiap render
-# ======================================
 def get_qbank():
     yaml_path = ROOT_DIR / "data" / "question_bank.yaml"
     return load_qbank(str(yaml_path))
@@ -49,9 +40,6 @@ candidate_id = st.sidebar.text_input(
 
 st.title("Assespro AI ")
 
-# ======================================
-# Tabs utama
-# ======================================
 tab_main, = st.tabs([" Input & Evaluasi"])
 
 with tab_main:
@@ -67,4 +55,3 @@ with tab_main:
         else:
             out_path = save_candidate_answers(candidate_id, results_all)
             st.success(f"Candidate answer successfully saved.")
-            # st.caption(f"File: {out_path}")

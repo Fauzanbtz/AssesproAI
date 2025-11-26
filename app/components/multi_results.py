@@ -40,18 +40,18 @@ def show_summary_and_download(results_all: List[Dict], candidate_id: str):
     df = build_summary_table(results_all)
     st.dataframe(df, use_container_width=True)
 
-    st.markdown("#### Detail Penilaian per Pertanyaan")
+    st.markdown("#### Detailed Assessment per Question")
     for idx, item in enumerate(results_all, start=1):
         rubric = item.get("rubric", {})
         with st.expander(f"Q{idx:02d} – {item.get('question_text','')[:70]}"):
-            st.write(f"Skor LLM (0–4): **{rubric.get('predicted_point')}**")
-            reason = rubric.get("reason") or "Tidak ada alasan dari LLM."
-            st.write("Alasan:")
+            st.write(f"Score (0–4): **{rubric.get('predicted_point')}**")
+            reason = rubric.get("reason") or "There is no explanation"
+            st.write("Reason:")
             st.write(reason)
-            st.write("Transkrip:")
+            st.write("transcript:")
             st.write(item.get("transcript", ""))
 
-    st.markdown("#### JSON Lengkap ")
+    st.markdown("#### Complete JSON ")
 
     all_json = {
         "candidateId": candidate_id,
@@ -62,10 +62,10 @@ def show_summary_and_download(results_all: List[Dict], candidate_id: str):
 
     buf = io.BytesIO(json.dumps(all_json, ensure_ascii=False, indent=2).encode("utf-8"))
     st.download_button(
-        "Download Semua Hasil Evaluasi (JSON)",
+        "Download All Evaluation Results (JSON)",
         data=buf,
         file_name=f"{candidate_id}_all_results.json",
         mime="application/json",
     )
 
-    st.success(f"Semua hasil evaluasi ({len(results_all)} pertanyaan) berhasil diproses & disimpan.")
+    st.success(f"All evaluation results ({len(results_all)} questions) have been successfully processed and saved.")
