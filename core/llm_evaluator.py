@@ -50,7 +50,6 @@ def _format_rubric_from_qspec(qspec: dict) -> str:
     seperti yang kamu pakai di eksperimen.
     """
     rub = qspec.get("rubric", {})
-    # fallback kalau tidak ada rubric di qspec
     if not rub:
         return (
             "Poin 4: Jawaban sangat jelas, lengkap, dan relevan.\n"

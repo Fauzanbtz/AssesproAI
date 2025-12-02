@@ -1,162 +1,204 @@
-##  Struktur Folder
+Berikut **README baru** yang sudah disesuaikan dengan arsitektur TERBARU project kamu (full LLM evaluator, pipeline Whisper sederhana, storage kandidat, dan HR Dashboard). Struktur dan penjelasan dibuat **rapih, profesional, dan ringkas**, sesuai standar project production.
+
+---
+
+# **Assespro AI — Automated Interview Assessment (LLM + Whisper)**
+
+Sistem penilaian interview berbasis video menggunakan:
+
+* **Audio Extraction (FFmpeg)**
+* **Whisper Speech-to-Text**
+* **Groq LLM Scoring** (llama-3.1-8b-instant)
+* **Structured Question Bank YAML**
+* **Streamlit UI (Candidate & HR Dashboard)**
+
+Pipeline otomatis:
+**Video → Audio → Transcription → LLM Evaluator → Candidate JSON → HR Dashboard Review**
+
+---
+
+# **📁 Struktur Folder**
 
 ```bash
-ai-interview-assessment/
+AssesproAI/
 ├─ app/
-│  ├─ app.py                      # Entry Streamlit (UI)
-│  ├─ components/                 # Komponen UI terpisah
-│  │  ├─ __init__.py
-│  │  ├─ inputs.py                # select QID, input link/upload
-│  │  ├─ results.py               # panel JSON HR, download button, tables
-│  │  └─ progress.py              # spinners, progress bars
-│  ├─ pages/                      # (opsional) halaman tambahan streamlit
-│  │  ├─ 1_Evaluation.ipynb       # halaman edukasi (notebook) – optional
-│  │  └─ 2_Docs.md                # dokumentasi singkat
-│  └─ __init__.py
+│  ├─ app.py                      # Kandidat upload + kirim jawaban
+│  ├─ Assespro.jpg                # Logo header
+│  ├─ dev.png                     # Gambar untuk halaman Dev
+│  ├─ components/                 # Komponen Streamlit
+│  │  ├─ evaluation_runner.py     # Jalankan pipeline STT → LLM
+│  │  ├─ multi_question_form.py   # UI multi-pertanyaan (upload video)
+│  │  ├─ multi_results.py         # Summary hasil evaluasi kandidat
+│  │  ├─ progress.py              # Long-running indicators
+│  │  ├─ whisper_viewer.py        # Analisis whisper (opsional)
+│  │  └─ result.py                # UI kecil untuk hasil tunggal
+│  ├─ pages/
+│  │  ├─ 1_HR_Dashboard.py        # Dashboard HR untuk review kandidat
+│  │  └─ 2_About_Dev.py           # Halaman profil tim Developer
 │
-├─ core/                          # Business logic (tanpa UI)
-│  ├─ __init__.py
-│  ├─ config.py                   # baca config.yaml & env vars
-│  ├─ question_bank.py            # load YAML/JSON pertanyaan & ideal answers
-│  ├─ downloader.py               # fetch video dari URL (yt-dlp, gdown, direct)
-│  ├─ media.py                    # ekstraksi audio, normalisasi (ffmpeg/moviepy)
-│  ├─ stt.py                      # Speech-to-Text (Whisper / faster-whisper)
-│  ├─ nlp_preprocess.py           # cleaning, stopword, slang dict, stemming
-│  ├─ language_router.py          # deteksi bahasa (fastText/langdetect/whisper)
-│  ├─ similarity.py               # Sentence-BERT similarity
-│  ├─ keywords.py                 # keyword coverage (must/nice)
-│  ├─ structure.py                # skor struktur jawaban (intro-body-closing)
-│  ├─ confidence.py               # gabungan ASR_conf, Lang_conf, Agree_conf, Len_conf
-│  ├─ evaluator.py                # hitung PerformanceScore + ConfidenceScore
-│  ├─ serializer.py               # compose output JSON untuk HR
-│  └─ utils.py                    # helper umum (timer, io, text normalize)
-│
-├─ models/                        # cache/model artefacts
-│  ├─ README.md
-│  └─ (auto cached)               # SBERT, fastText lid.176.bin, dll.
+├─ core/
+│  ├─ config.py                   # Baca config.yaml
+│  ├─ question_bank.py            # Load dan normalisasi YAML pertanyaan
+│  ├─ llm_evaluator.py            # Evaluasi jawaban dengan Groq LLM
+│  ├─ evaluator.py                # Wrapper pipeline STT + LLM
+│  ├─ stt.py                      # Whisper transcription
+│  ├─ media.py                    # Extract audio 16k mono
+│  ├─ downloader.py               # Download video dari URL (opsional)
+│  ├─ serializer.py               # Format final JSON bagi HR
+│  ├─ storage.py                  # Simpan jawaban kandidat ke /data
+│  └─ utils.py                    # Helper umum
 │
 ├─ data/
-│  ├─ question_bank.yaml          # definisi QID, ideal answer, keywords, weight
-│  ├─ slang_dict.json             # kamus normalisasi (opsional)
-│  ├─ stopwords_id.txt            # (opsional, jika custom)
-│  └─ samples/                    # contoh video & GT untuk demo/test
+│  ├─ question_bank.yaml          # Bank pertanyaan (rubric, context, constraints)
+│  ├─ candidate_answers/          # Hasil evaluasi setiap kandidat
+│  └─ candidates_metadata/        # Metadata kandidat (opsional)
 │
-├─ experiments/                   # notebook eksplorasi (bebas)
-│  ├─ 01_whisper_eval.ipynb
-│  ├─ 02_similarity_calibration.ipynb
-│  └─ 03_streamlit_prototype.ipynb
-│
-├─ evaluation/                    # skrip evaluasi akurasi STT
-│  ├─ compute_wer.py              # batch WER/CER → CSV + ringkasan
-│  └─ datasets/
-│     ├─ audio/                   # *.wav
-│     └─ gt/                      # *.txt (ground truth)
-│
-├─ tmp/                           # artefak runtime (gitignore)
-│  ├─ videos/                     # unduhan video mentah
-│  ├─ audio/                      # wav 16k mono
-│  └─ transcripts/                # txt/srt/json segmen
-│
-├─ logs/
-│  └─ app.log                     # logging pipeline
+├─ tmp/
+│  ├─ videos/                     # Video upload kandidat
+│  ├─ audio/                      # Audio setelah extract
+│  └─ transcripts/                # Transkripsi Whisper
 │
 ├─ tests/
-│  ├─ test_downloader.py
-│  ├─ test_stt.py
-│  ├─ test_evaluator.py
-│  └─ test_confidence.py
+│  ├─ app.py                      # Testing manual (opsional)
 │
-├─ config.yaml                    # konfigurasi global (paths, model size, thresholds)
-├─ requirements.txt               # dependensi
-├─ .env.example                   # ENV (MODEL_SIZE, CUDA, API KEYS jika perlu)
-├─ .gitignore
+├─ config.yaml                    # Konfigurasi model + LLM
+├─ requirements.txt               # Dependencies
+├─ .env.example                   # Template API keys (Groq)
 └─ README.md
 ```
 
 ---
 
-## File Penting
+# **⚙️ Teknologi yang Digunakan**
 
-### `requirements.txt`
-```bash
-streamlit
-moviepy
-ffmpeg-python
-yt-dlp
-requests
-whisper
-faster-whisper
-sentence-transformers
-langdetect
-pyyaml
-pandas
-numpy
-jiwer
-Sastrawi
-```
+| Komponen       | Teknologi                       |
+| -------------- | ------------------------------- |
+| Speech-to-Text | Whisper (openAI / CTranslate2)  |
+| LLM Scoring    | Groq API – llama-3.1-8b-instant |
+| Video → Audio  | FFmpeg                          |
+| UI             | Streamlit multipage             |
+| Data Storage   | JSON structured per candidate   |
+| Config         | YAML-based question bank        |
+
 ---
 
-##  Cara Menjalankan
+# **🚀 Cara Menjalankan Project**
+
+## **1. Install Requirements**
 
 ```bash
-# 1. Buat virtual environment
-python -m venv .venv
-source .venv/bin/activate     # (Windows: .venv\Scripts\activate)
-
-# 2. Install dependencies
 pip install -r requirements.txt
+```
 
-# 3. Jalankan aplikasi Streamlit
+## **2. Siapkan file `.env`**
+
+```
+GROQ_API_TOKEN=your_api_key_here
+```
+
+## **3. Jalankan Aplikasi**
+
+```bash
 streamlit run app/app.py
 ```
 
----
+## **4. HR Dashboard**
 
-##  Deskripsi Modul
+Streamlit otomatis memuat halaman HR:
 
-| Folder | Fungsi |
-|--------|---------|
-| `app/` | Antarmuka Streamlit (UI HR) |
-| `core/` | Logika utama: STT, NLP, scoring |
-| `data/` | Bank pertanyaan & kamus teks |
-| `evaluation/` | Pengujian akurasi STT (WER/CER) |
-| `experiments/` | Eksperimen & notebook riset |
-| `tmp/` | Artefak runtime (video/audio/temp) |
-| `tests/` | Unit test modular |
-| `models/` | Cache model SBERT / FastText |
+```
+app/pages/1_HR_Dashboard.py
+```
 
 ---
 
->  **Catatan tambahan:**
-> - Target akurasi *Speech-to-Text (STT)* minimal **≥ 90%** (berdasarkan Word Error Rate).  
-> - Pipeline lengkap: **Video → Audio → Transkrip → Analisis → JSON HR-friendly**.  
-> - Folder `data/samples/` digunakan untuk contoh video dan dataset pengujian.
-> - buat file tmp yang isinya /audio, /transcripts , /videos
+# **🧩 Arsitektur Pipeline**
 
+```
+[1] Video Upload Kandidat
+     ↓
+[2] Extract Audio (FFmpeg → WAV 16k)
+     ↓
+[3] Speech-to-Text (Whisper)
+     ↓
+[4] Ambil Question Spec dari YAML (rubric + context)
+     ↓
+[5] Kirim ke Groq LLM Evaluator
+     ↓
+[6] LLM menghasilkan skor 0–4 + alasan
+     ↓
+[7] Simpan JSON ke /data/candidate_answers/<ID>.json
+     ↓
+[8] HR Dashboard membaca & menampilkan secara lengkap
+```
 
+---
 
-Video (.mp4)
-   ↓
-Audio (16k WAV)
-   ↓
-Whisper STT
-   ↓
-Transcript + Metadata
-   ↓
- ┌─────────────────────────────┐
- │  EVALUATOR CORE             │
- │  ├─ Layer 1: SBERT Similarity│
- │  ├─ Layer 2: Keyword, Structure, Confidence │
- │  └─ Layer 3: Semantic Rubric Matching (0–4) │
- └─────────────────────────────┘
-   ↓
-Performance + Confidence + Rubric Grade
-   ↓
-JSON Output (for HR)
+# **📝 Format Output Candidate Answers**
 
+Contoh ringkas file:
 
-| Layer   | Fitur                                     |
-| ------- | ----------------------------------------- |
-| Layer 1 | SBERT similarity, segment-max similarity  |
-| Layer 2 | keyword coverage, structure, token length |
-| Layer 3 | semantic match ke rubric P0..P4           |
+```json
+{
+  "candidateId": "C123",
+  "savedAt": "...",
+  "totalQuestions": 5,
+  "results": [
+    {
+      "qid": "Q01",
+      "question_text": "...",
+      "transcript": "...",
+      "asr": { "avg_logprob": -4.1, "no_speech_prob": 0.17 },
+      "rubric": {
+        "predicted_point": 2,
+        "reason": "Candidate explained..."
+      },
+      "llm": {
+        "model": "llama-3.1-8b-instant",
+        "backend": "groq"
+      }
+    }
+  ]
+}
+```
+
+---
+
+# **💡 Fitur Utama Project**
+
+### **1. Full LLM Scoring**
+
+Tidak lagi memakai similarity, SBERT, keywords, atau struktur jawaban.
+Hanya:
+
+* whisper transcript
+* question<context + rubric + constraints>
+* LLM scoring (0–4)
+
+### **2. YAML Question Bank yang Fleksibel**
+
+Per-pertanyaan dapat mengatur:
+
+* rubric 0–4
+* llm_context
+* hard_constraints
+* ideal answer
+* must keywords (jika ingin)
+
+### **3. HR Dashboard Profesional**
+
+HR dapat:
+
+* memilih kandidat
+* membuka hasil per-pertanyaan
+* melihat reasoning LLM
+* melihat transcript
+* download JSON
+
+### **4. Storage Otomatis**
+
+* `/data/candidate_answers/<ID>.json`
+* `/tmp/videos`
+* `/tmp/audio`
+* `/tmp/transcripts`
+
