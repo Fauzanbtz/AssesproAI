@@ -18,10 +18,15 @@ def _round_or_none(val, ndigits: int = 4):
 def compose_hr_json(qspec, transcript, result, meta, source_url, video_path):
 
     now = datetime.now().astimezone().isoformat()
+# Support format baru dan lama
 
-    asr_avg = meta.get("avg_logprob", None)
-    asr_ns = meta.get("no_speech_prob", None)
-    asr_dur = meta.get("duration_sec", None)
+# format baru: meta["asr_metrics"]["avg_logprob"]
+    asr_metrics = meta.get("asr_metrics", {})
+
+    asr_avg = meta.get("avg_logprob") or asr_metrics.get("avg_logprob")
+    asr_ns  = meta.get("no_speech_prob") or asr_metrics.get("no_speech_prob")
+    asr_dur = meta.get("duration_sec") or asr_metrics.get("duration_sec")
+
 
     base = {
         "qid": qspec["qid"],

@@ -111,9 +111,15 @@ def analyze_audio_features(wav_path):
         return {"avg_pitch": 0, "pitch_variance": 0, "energy_mean": 0}
 
 
-def transcribe(wav_path, cfg):
+def load_whisper_model(cfg):
+    size = cfg["models"]["whisper_size"]
+    print(f"Memuat model Whisper: {size}")
+    model = whisper.load_model(size)
+    return model
+
+
+def transcribe(wav_path, cfg, model):
     print(f"Memulai transkripsi untuk: {wav_path}")
-    model = whisper.load_model(cfg["models"]["whisper_size"])
 
     options = dict(decode_options)
     options["initial_prompt"] = prompt
@@ -172,18 +178,18 @@ def transcribe(wav_path, cfg):
     base = Path(wav_path).stem
     out_path = out_dir / f"{base}.json"
 
-    output_data = {
-        "text": text,
-        "segments": simplified_segments,
-        "meta": full_meta
-    }
-
     def convert(o):
         if isinstance(o, (np.floating, np.float32, np.float64)):
             return float(o)
         if isinstance(o, (np.integer, np.int32, np.int64)):
             return int(o)
         raise TypeError
+
+    output_data = {
+        "text": text,
+        "segments": simplified_segments,
+        "meta": full_meta
+    }
 
     with open(out_path, "w", encoding="utf-8") as f:
         json.dump(output_data, f, ensure_ascii=False, indent=2, default=convert)
