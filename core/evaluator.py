@@ -20,20 +20,19 @@ def evaluate_answer(transcript_text: str, qspec: dict, whisper_meta: dict, cfg: 
     result = {
         "lang_selected": lang,
 
-        # field lama → diisi default saja
-        "sim": 0.0,
-        "sim_max": None,
-        "keyword_must_coverage": 0.0,
-        "keyword_nice_coverage": 0.0,
-        "structure": None,
-        "structure_features": None,
-        "hits": {"must": [], "nice": []},
+        # # field lama → diisi default saja
+        # "sim": 0.0,
+        # "sim_max": None,
+        # "keyword_must_coverage": 0.0,
+        # "keyword_nice_coverage": 0.0,
+        # "structure": None,
+        # "structure_features": None,
+        # "hits": {"must": [], "nice": []},
 
-        # skor utama
-        "performance_score": performance_score,
-        "confidence_score": None,
+        # # # skor utama
+        # "performance_score": performance_score,
+        # "confidence_score": None,
 
-        # info rubric dari LLM
         "rubric_point": int(llm_score),
         "rubric_reason": llm_reason,
         "rubric_similarity": None,

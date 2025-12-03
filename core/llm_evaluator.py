@@ -1,16 +1,3 @@
-# core/llm_evaluator.py
-
-"""
-Evaluator berbasis LLM (Groq) untuk menilai jawaban interview.
-
-Modul ini TIDAK memakai SBERT / 3-layer evaluator,
-hanya mengandalkan LLM + rubric untuk memberi skor 0–4.
-
-Didesain supaya bisa dipanggil dari mana saja, misalnya:
-  - notebook
-  - Streamlit
-  - skrip batch
-"""
 import os
 import json
 from typing import Dict, Any, Optional
@@ -18,7 +5,6 @@ from typing import Dict, Any, Optional
 import requests
 from dotenv import load_dotenv
 
-# baca .env sekali saat modul di-import
 load_dotenv()
 
 GROQ_DEFAULT_URL = "https://api.groq.com/openai/v1/chat/completions"
@@ -26,17 +12,13 @@ GROQ_ENV_VAR = "GROQ_API_TOKEN"
 
 
 class LLMEvaluatorError(Exception):
-    """Error khusus untuk LLM evaluator."""
     pass
 
 
 def _get_api_key_from_env(env_var: str = GROQ_ENV_VAR) -> str:
-    # pastikan .env sudah diload
     load_dotenv()
     key = os.getenv(env_var)
     if not key:
-        # Bisa juga tidak raise dan biarkan 401 dari Groq,
-        # tapi pesan ini lebih jelas di sisi kamu.
         raise LLMEvaluatorError(
             f"API key LLM tidak ditemukan di environment variable '{env_var}'. "
             f"Pastikan file .env berisi {env_var}=YOUR_TOKEN dan sudah di-load."
@@ -45,10 +27,7 @@ def _get_api_key_from_env(env_var: str = GROQ_ENV_VAR) -> str:
 
 
 def _format_rubric_from_qspec(qspec: dict) -> str:
-    """
-    Mengubah rubric di question_bank (dict {0..4: teks}) menjadi teks panjang
-    seperti yang kamu pakai di eksperimen.
-    """
+
     rub = qspec.get("rubric", {})
     if not rub:
         return (
@@ -60,7 +39,6 @@ def _format_rubric_from_qspec(qspec: dict) -> str:
         )
 
     lines = []
-    # urutkan 4 → 0 agar lebih natural dibaca
     for point in sorted(rub.keys(), reverse=True):
         desc = str(rub[point]).strip()
         lines.append(f"Poin {point}:\n{desc}\n")
@@ -77,9 +55,6 @@ def _build_prompt(
     hard_constraints: Optional[str] = None,
     extra_guidelines: Optional[str] = None,
 ) -> str:
-    """
-    Susun prompt ke LLM, dengan konteks per-soal, ideal answer, dan keyword penting.
-    """
     if not extra_guidelines:
         extra_guidelines = """
 - If the answer covers most important points but lacks minor details, give 3 or 4.
@@ -146,9 +121,6 @@ def _call_groq_chat(
     max_tokens: int = 400,
     temperature: float = 0.0,
 ) -> Dict[str, Any]:
-    """
-    Panggil Groq Chat Completions API dan kembalikan JSON mentah dari Groq.
-    """
     if api_key is None:
         api_key = _get_api_key_from_env()
 
@@ -182,10 +154,6 @@ def _call_groq_chat(
 
 
 def _extract_score_from_llm_response(raw: Dict[str, Any]) -> Dict[str, Any]:
-    """
-    Ambil 'score' dan 'reason' dari respons Groq.
-    Respons diharapkan berupa JSON string di content.
-    """
     try:
         content = raw["choices"][0]["message"]["content"]
     except Exception as e:
@@ -202,7 +170,6 @@ def _extract_score_from_llm_response(raw: Dict[str, Any]) -> Dict[str, Any]:
     score = int(parsed.get("score", 0))
     reason = str(parsed.get("reason", "")).strip()
 
-    # jaga-jaga kalau LLM keluarin skor diluar 0–4
     if score < 0:
         score = 0
     if score > 4:
@@ -220,32 +187,6 @@ def evaluate_answer_llm(
     qspec: dict,
     cfg: Optional[dict] = None,
 ) -> Dict[str, Any]:
-    """
-    Fungsi utama yang bisa dipanggil dari luar.
-
-    Args:
-        transcript_text: jawaban kandidat (hasil Whisper / manual).
-        qspec: 1 item dari question_bank (berisi qid, question_text, rubric, llm, dll.).
-        cfg: optional config global; kalau ada, dipakai untuk baca pengaturan LLM.
-             Misalnya:
-             cfg["llm"] = {
-                "backend": "groq",
-                "model": "llama-3.1-8b-instant",
-                "api_url": "https://api.groq.com/openai/v1/chat/completions",
-                "api_key_env": "GROQ_API_TOKEN"
-             }
-
-    Returns:
-        {
-          "qid": ...,
-          "llm_score": int 0..4,
-          "llm_reason": str,
-          "llm_model": str,
-          "llm_backend": str,
-          "llm_raw_content": str
-        }
-    """
-    # pilih bahasa utama
     lang = qspec.get("languages_supported", ["en"])[0]
 
     # teks pertanyaan
