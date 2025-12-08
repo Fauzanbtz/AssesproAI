@@ -173,7 +173,7 @@ def transcribe(wav_path, cfg, model):
         for i, s in enumerate(segments)
     ]
 
-    out_dir = Path("tmp/transcripts")
+    out_dir = Path("data/transcripts")
     out_dir.mkdir(parents=True, exist_ok=True)
     base = Path(wav_path).stem
     out_path = out_dir / f"{base}.json"

@@ -3,70 +3,40 @@ app:
   max_upload_mb: 200
 
 paths:
-  tmp_videos: "tmp/videos"
-  tmp_audio: "tmp/audio"
-  tmp_transcripts: "tmp/transcripts"
-  models_cache: "models"               # folder cache untuk SBERT / artefak
-  candidates_store: "data/candidates"  # tempat simpan JSON kandidat
-  calibrator_path: "models/calibrator.joblib"
+  videos: data/videos
+  audio: data/audio
+  transcripts: data/transcripts
+  whisper_metadata: data/whisper_metadata
+  candidate_answers: data/candidate_answers
+  candidates_metadata: data/candidates_metadata
+  models_cache: models
 
 models:
-  whisper_backend: "whisper"                 # whisper | faster-whisper
+  whisper_backend: "whisper"         # whisper or faster-whisper
   whisper_size: "medium"
-  sbert_name: "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
-  langdetect: "en"
+  llm_backend: "groq"                # groq / openai / together / local
+  llm_model: "llama-3.1-8b-instant"  # model untuk rubric evaluator
 
-scoring:
-  pass_threshold: 0.70
-  weights:
-    similarity: 0.55
-    keyword_must: 0.30
-    keyword_nice: 0.10
-    structure: 0.05
+whisper:
+  language: "en"
+  beam_size: 5
+  best_of: 5
+  temperature: 0
+  initial_prompt: |
+    TensorFlow, Keras, dropout layer, convolutional layer, MobileNet,
+    EfficientNet, VGG16, VGG19, transfer learning, validation loss, accuracy
 
-# tambahan: bobot struktur yang bisa di-tune atau dilatih
-structure_weights:
-  tokens: 0.45
-  intro: 0.20
-  close: 0.20
-  effect: 0.15
+llm_scoring:
+  use_rubric: true            # aktifkan rubric evaluator (skor 0–4)
+  fail_if_unrelated: true     # jika jawaban tidak relevan → skor 0
+  max_score: 4
 
-# keyword fuzzy / soft matching
-keywords:
-  fuzzy_threshold: 85        # 0-100, rapidfuzz partial_ratio threshold
-  normalize: true            # lakukan normalisasi teks sebelum matching
+wer_target_accuracy: 0.90      # target STT akurasi (opsional)
 
-confidence:
-  asr_weight: 0.7
-  min_len_tokens: 120
-
-# rubric: kalau aktif, evaluasi semantic mapping P0..P4
-rubric:
-  enabled: true
-  # presence of rubric texts per QID expected in question bank (qspec["rubric"])
-  use_rubric_for_display: true
-
-# calibration (optional) - path dipakai jika file ada
-calibration:
-  enabled: true
-  calibrator_path: "models/calibrator.joblib"
-  # fitur urutan saat training harus sama dengan yang dipakai di core/calibrator
-  feature_order:
-    - sim
-    - sim_max
-    - keyword_must_coverage
-    - keyword_nice_coverage
-    - structure
-    - confidence_score
-
-# pengaturan performa / resource
 runtime:
-  sbert_batch_size: 32
   use_gpu_if_available: true
+  whisper_batching: false
 
-# eksperimen & logging
-experiments:
-  enable_benchmark_notebook: true
-  benchmark_output: "evaluation/benchmark_report.csv"
-
-wer_target_accuracy: 0.90
+logging:
+  save_whisper_debug: true
+  save_llm_raw_response: true

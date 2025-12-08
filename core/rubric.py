@@ -11,10 +11,6 @@ def _get_model(name: str):
     return _models[name]
 
 def rubric_semantic_grader(answer: str, rubric_texts: dict, model_name: str):
-    """
-    rubric_texts: dict of {int_point: "description text"} (e.g., 0..4)
-    returns: predicted_point:int, sim_score:float, sims_map:dict
-    """
     if not rubric_texts:
         return None, None, {}
     model = _get_model(model_name)

@@ -54,17 +54,17 @@ with tab_main:
                 st.session_state.processing = True
                 st.rerun()
     else:
-        st.info("⏳ Processing your submission, please wait...")
+        st.info(" Processing your submission, please wait...")
 
     if st.session_state.processing:
-        with st.spinner("⏳ Uploading and processing your answers..."):
+        with st.spinner(" Uploading and processing your answers..."):
             results_all = process_all_answers(videos_input, candidate_id, cfg)
 
         if not results_all:
             st.warning("No answers have been successfully saved.")
         else:
             out_path = save_candidate_answers(candidate_id, results_all)
-            st.success("✔️ Candidate answers successfully saved.")
+            st.success(" Candidate answers successfully saved.")
             # st.caption(f"File: {out_path}")
 
         st.session_state.processing = False

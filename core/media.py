@@ -3,8 +3,10 @@ import subprocess
 from moviepy import VideoFileClip  
 
 def extract_wav16k(video_path: Path, cfg) -> Path:
-    outdir = Path(cfg["paths"]["tmp_audio"])
+    # gunakan folder baru
+    outdir = Path(cfg["paths"]["audio"])
     outdir.mkdir(parents=True, exist_ok=True)
+
     out = outdir / (video_path.stem + ".16k.wav")
 
     try:
@@ -26,10 +28,10 @@ def extract_wav16k(video_path: Path, cfg) -> Path:
         cmd = [
             "ffmpeg", "-y",
             "-i", video_path.as_posix(),
-            "-vn",              
-            "-ar", "16000",     
-            "-ac", "1",        
-            "-c:a", "pcm_s16le", 
+            "-vn",
+            "-ar", "16000",
+            "-ac", "1",
+            "-c:a", "pcm_s16le",
             out.as_posix()
         ]
         subprocess.run(cmd, check=True)

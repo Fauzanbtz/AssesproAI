@@ -3,10 +3,6 @@ from datetime import datetime
 
 
 def _round_or_none(val, ndigits: int = 4):
-    """
-    Helper: kalau val bisa di-cast ke float → round,
-    kalau None / tidak bisa → kembalikan None.
-    """
     if val is None:
         return None
     try:
@@ -18,9 +14,6 @@ def _round_or_none(val, ndigits: int = 4):
 def compose_hr_json(qspec, transcript, result, meta, source_url, video_path):
 
     now = datetime.now().astimezone().isoformat()
-# Support format baru dan lama
-
-# format baru: meta["asr_metrics"]["avg_logprob"]
     asr_metrics = meta.get("asr_metrics", {})
 
     asr_avg = meta.get("avg_logprob") or asr_metrics.get("avg_logprob")
@@ -42,10 +35,6 @@ def compose_hr_json(qspec, transcript, result, meta, source_url, video_path):
         },
 
         "transcript": transcript,
-
-        # "keyword_hits": result.get("hits", {}),
-        # "structure_features": result.get("structure_features", {}),
-
         "video_meta": {
             "source_url": source_url,
             "saved_video": str(video_path),
@@ -63,11 +52,9 @@ def compose_hr_json(qspec, transcript, result, meta, source_url, video_path):
             # "rubric_sims": result.get("rubric_sims", {}),
         }
 
-    # include advanced ASR metrics if present
     if "advanced_metrics" in meta:
         base["asr_advanced"] = meta["advanced_metrics"]
 
-    # optional: raw LLM info kalau kamu simpan di evaluator
     if "llm_raw" in result:
         base["llm"] = result["llm_raw"]
 

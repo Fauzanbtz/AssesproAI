@@ -3,15 +3,15 @@ import json
 from pathlib import Path
 import pandas as pd
 
-def show_whisper_accuracy_results(folder_path="tmp/whisper_results"):
+def show_whisper_accuracy_results(folder_path="data/whisper_metadata"):
     folder = Path(folder_path)
     folder.mkdir(parents=True, exist_ok=True)
 
-    st.markdown("### 🎯 Rekapitulasi Akurasi Whisper")
+    st.markdown("###  Rekapitulasi Akurasi Whisper")
     files = sorted(folder.glob("*.json"))
 
     if not files:
-        st.info("📂 Belum ada hasil whisper yang tersimpan di folder `tmp/whisper_results`.")
+        st.info("📂 Belum ada hasil whisper yang tersimpan di folder .")
         return
 
     all_data = []
@@ -42,7 +42,7 @@ def show_whisper_accuracy_results(folder_path="tmp/whisper_results"):
     avg_cer = df["CER"].mean() if not df.empty else 0
     avg_word_acc = df["Word Accuracy (%)"].mean() if not df.empty else 0
 
-    st.markdown("#### 📊 Rata-rata Akurasi Whisper")
+    st.markdown("####  Rata-rata Akurasi Whisper")
     col1, col2, col3 = st.columns(3)
     col1.metric("Rata-rata WER", f"{avg_wer:.3f}")
     col2.metric("Rata-rata CER", f"{avg_cer:.3f}")

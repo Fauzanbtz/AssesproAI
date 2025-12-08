@@ -1,9 +1,0 @@
-adit1.mp4
-
-Question 3 – Image Classification
-
-Q: How would you build an image classification model using convolutional neural networks (CNNs)?
-
-A:
-In image classification, convolutional neural networks, or CNNs, are the most effective approach. First, I prepare the dataset — for example, CIFAR-10 or a custom dataset — by resizing and normalizing images and splitting them into training and validation sets. Then, I define the CNN architecture in TensorFlow or Keras. Typically, it starts with a series of Conv2D layers to extract spatial features, each followed by ReLU activation and MaxPooling to reduce dimensionality.
-After several convolutional blocks, I flatten the output and pass it through one or more Dense layers, ending with a softmax output layer that gives class probabilities. I compile the model with the Adam optimizer and categorical cross-entropy loss, then train it over several epochs. Data augmentation techniques — such as rotation, flipping, or zoom — help improve generalization. Finally, I evaluate the model’s accuracy and can fine-tune it using transfer learning with pre-trained models like ResNet or MobileNet for higher performance. CNNs are highly efficient in identifying visual patterns, making them ideal for tasks like object detection and image recognition.
