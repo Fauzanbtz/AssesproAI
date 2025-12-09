@@ -56,6 +56,6 @@ def compose_hr_json(qspec, transcript, result, meta, source_url, video_path):
         base["asr_advanced"] = meta["advanced_metrics"]
 
     if "llm_raw" in result:
-        base["llm"] = result["llm_raw"]
+        base["evaluator"] = result["llm_raw"]
 
     return base

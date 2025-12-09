@@ -12,10 +12,10 @@ paths:
   models_cache: models
 
 models:
-  whisper_backend: "whisper"         # whisper or faster-whisper
+  whisper_backend: "whisper"         
   whisper_size: "medium"
-  llm_backend: "groq"                # groq / openai / together / local
-  llm_model: "llama-3.1-8b-instant"  # model untuk rubric evaluator
+  llm_backend: "groq"                
+  llm_model: "llama-3.1-8b-instant"  
 
 whisper:
   language: "en"
@@ -27,11 +27,11 @@ whisper:
     EfficientNet, VGG16, VGG19, transfer learning, validation loss, accuracy
 
 llm_scoring:
-  use_rubric: true            # aktifkan rubric evaluator (skor 0–4)
-  fail_if_unrelated: true     # jika jawaban tidak relevan → skor 0
+  use_rubric: true            
+  fail_if_unrelated: true     
   max_score: 4
 
-wer_target_accuracy: 0.90      # target STT akurasi (opsional)
+wer_target_accuracy: 0.90      
 
 runtime:
   use_gpu_if_available: true

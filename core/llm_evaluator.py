@@ -203,7 +203,7 @@ def evaluate_answer_llm(
     must_keywords = ans_spec.get("keywords", {}).get("must", [])
 
     # konteks spesifik LLM per soal (opsional)
-    llm_spec = qspec.get("llm", {}) or {}
+    llm_spec = qspec.get("evaluator", {}) or {}
     llm_context = llm_spec.get("context", "")
     llm_hard_constraints = llm_spec.get("hard_constraints", "")
 
@@ -219,7 +219,7 @@ def evaluate_answer_llm(
     )
 
     # baca pengaturan LLM dari cfg jika ada
-    llm_cfg = (cfg or {}).get("llm", {}) if cfg is not None else {}
+    llm_cfg = (cfg or {}).get("evaluator", {}) if cfg is not None else {}
     model = llm_cfg.get("model", "llama-3.1-8b-instant")
     api_url = llm_cfg.get("api_url", GROQ_DEFAULT_URL)
     api_key_env = llm_cfg.get("api_key_env", GROQ_ENV_VAR)
@@ -242,8 +242,8 @@ def evaluate_answer_llm(
         "qid": qspec.get("qid"),
         "llm_score": parsed["score"],
         "llm_reason": parsed["reason"],
-        "llm_model": model,
-        "llm_backend": backend,
+        # "llm_model": model,
+        # "llm_backend": backend,
         "llm_raw_content": parsed["raw_content"],
     }
 
