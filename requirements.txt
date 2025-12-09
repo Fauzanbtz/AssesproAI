@@ -16,3 +16,4 @@ Sastrawi
 langdetect
 transformers
 gdown
+librosa
