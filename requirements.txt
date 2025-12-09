@@ -17,3 +17,5 @@ langdetect
 transformers
 gdown
 librosa
+ffmpeg
+ffmpeg-python
