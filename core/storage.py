@@ -68,9 +68,6 @@ def save_candidate_answers(
     results_all: List[dict],
     base_folder: str = "data/candidate_answers"
 ) -> Path:
-    """
-    Menyimpan hasil evaluasi lengkap (per-pertanyaan) untuk satu kandidat.
-    """
     folder = Path(base_folder)
     folder.mkdir(parents=True, exist_ok=True)
 

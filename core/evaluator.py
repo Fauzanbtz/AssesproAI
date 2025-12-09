@@ -42,8 +42,6 @@ def evaluate_answer(transcript_text: str, qspec: dict, whisper_meta: dict, cfg: 
     }
 
     result["llm_raw"] = {
-        "model": llm_res.get("llm_model"),
-        "backend": llm_res.get("llm_backend"),
         "raw_content": llm_res.get("llm_raw_content"),
     }
 

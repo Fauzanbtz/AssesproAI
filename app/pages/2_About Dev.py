@@ -13,14 +13,14 @@ st.markdown("""
 
 ### **Members**
 
-#### **1. Muhamad Aditya Umar Faiz**  
-- **Cohort ID:** M891D5Y1168  
+#### **1. Andi Nabilah Putri Maharani**  
+- **Cohort ID:** M891D5X0211 
 
 #### **2. Muhammad Fauzan**  
 - **Cohort ID:** M891D5Y1270  
 
-#### **3. Andi Nabilah Putri Maharani**  
-- **Cohort ID:** M891D5X0211  
+#### **3. Muhamad Aditya Umar Faiz**  
+- **Cohort ID:** M891D5Y1168  
 """)
 
 # ===== Banner / Image =====

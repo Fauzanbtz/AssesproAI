@@ -83,7 +83,7 @@ def qbank_to_table(qbank: List[Dict[str, Any]]) -> pd.DataFrame:
             "QID": q.get("qid", ""),
             "English Question": q.get("question_text", {}).get("en", "")[:120],
             "Has Rubric": "✔" if any(v.strip() for v in q.get("rubric", {}).values()) else "✖",
-            "Has LLM Context": "✔" if q.get("llm", {}).get("context", "").strip() else "✖"
+            "Has Question Context": "✔" if q.get("llm", {}).get("context", "").strip() else "✖"
         })
     return pd.DataFrame(rows)
 
@@ -92,7 +92,7 @@ def download_yaml_bytes(qbank: List[Dict[str, Any]]) -> bytes:
     return payload.encode("utf-8")
 
 st.title("HR Dashboard ")
-st.markdown("Manage a question bank (YAML). Add, edit, delete, export/import.")
+st.markdown("Manage a question bank. Add, edit, delete, export/import.")
 
 col_top_left, col_top_right = st.columns([3,1])
 
@@ -151,9 +151,9 @@ with st.form(key="create_form"):
         with rcols[s]:
             new_rubric[s] = st.text_area(f"{s}", key=f"new_rubric_{s}", height=90)
 
-    st.markdown("**LLM fields**")
-    new_llm_context = st.text_area("LLM Context", height=120)
-    new_llm_constraints = st.text_area("LLM Hard Constraints", height=80)
+    st.markdown("**Question field**")
+    new_llm_context = st.text_area("Question Context", height=120)
+    new_llm_constraints = st.text_area("Question Hard Constraints", height=80)
 
     submitted = st.form_submit_button("Add Question", help=None)
     if submitted:
@@ -203,9 +203,9 @@ else:
             with rcols[s]:
                 erubric[s] = st.text_area(f"{s}", existing, key=f"erubric_{sel_qid}_{s}", height=90)
 
-        st.markdown("**LLM fields**")
-        econtext = st.text_area("LLM Context", sel_q.get("llm", {}).get("context", ""), height=120, key=f"econtext_{sel_qid}")
-        econst = st.text_area("LLM Hard Constraints", sel_q.get("llm", {}).get("hard_constraints", ""), height=80, key=f"econst_{sel_qid}")
+        st.markdown("**Question field**")
+        econtext = st.text_area("Question Context", sel_q.get("llm", {}).get("context", ""), height=120, key=f"econtext_{sel_qid}")
+        econst = st.text_area("Question Constraints", sel_q.get("llm", {}).get("hard_constraints", ""), height=80, key=f"econst_{sel_qid}")
 
         save_pressed = st.form_submit_button("Save Changes")
 
@@ -250,50 +250,6 @@ else:
 
 
 st.markdown("---")
-
-# ============================
-# Candidate JSON viewer (existing)
-# ============================
-# st.header("Hasil Evaluasi Kandidat (JSON)")
-
-# folder = ROOT_DIR / "app" / "tmp" / "transcripts"
-# if not folder.exists():
-#     folder = ROOT_DIR / "tmp" / "transcripts"
-
-# files = sorted(folder.glob("*.json")) if folder.exists() else []
-
-# if not files:
-#     st.info("Belum ada hasil JSON dari kandidat.")
-# else:
-#     data = []
-#     for f in files:
-#         try:
-#             j = json.loads(f.read_text(encoding="utf-8"))
-#         except Exception as e:
-#             st.error(f"Gagal membaca {f.name}: {e}")
-#             continue
-#         scores = j.get("scores", {})
-#         data.append({
-#             "file": f.name,
-#             "qid": j.get("qid", "-"),
-#             "similarity": scores.get("similarity", 0.0),
-#             "keyword_must": scores.get("keyword_must_coverage", 0.0),
-#             "performance": scores.get("performance_score", 0.0),
-#             "confidence": scores.get("confidence_score", 0.0),
-#             "lang": j.get("language_selected", "-"),
-#             "timestamp": j.get("timestamp", "-"),
-#         })
-
-#     df = pd.DataFrame(data)
-#     st.dataframe(df, use_container_width=True)
-#     sel = st.selectbox("Pilih hasil untuk dilihat:", df["file"])
-#     if sel:
-#         j = json.loads((folder / sel).read_text(encoding="utf-8"))
-#         st.subheader(f"Detail Hasil: {sel}")
-#         st.json(j)
-
-# st.markdown("---")
-
 
 st.header("Candidate Answer Results")
 

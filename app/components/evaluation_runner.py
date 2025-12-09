@@ -11,11 +11,13 @@ from core.evaluator import evaluate_answer
 from core.serializer import compose_hr_json
 from core.storage import save_candidate_metadata
 
-
 def process_all_answers(videos_input, candidate_id: str, cfg: dict):
     results_all = []
 
     whisper_model = load_whisper_model(cfg)
+
+    video_dir = Path("data/videos")
+    video_dir.mkdir(parents=True, exist_ok=True)
 
     for idx, entry in enumerate(videos_input, start=1):
         qspec = entry["qspec"]
@@ -24,11 +26,9 @@ def process_all_answers(videos_input, candidate_id: str, cfg: dict):
         video_path = entry.get("video_path")
 
         if upload_file is not None and video_path is None:
-            tmp_dir = Path(cfg["paths"]["tmp_videos"])
-            tmp_dir.mkdir(parents=True, exist_ok=True)
-            tmp_path = tmp_dir / upload_file.name
-            tmp_path.write_bytes(upload_file.read())
-            video_path = tmp_path
+            saved_video = video_dir / upload_file.name
+            saved_video.write_bytes(upload_file.read())
+            video_path = saved_video
 
         if not video_path and not source_url:
             continue
@@ -40,7 +40,7 @@ def process_all_answers(videos_input, candidate_id: str, cfg: dict):
 
         text, segments, meta = transcribe(wav, cfg, whisper_model)
 
-        whisper_folder = Path("tmp/whisper_results")
+        whisper_folder = Path("data/whisper_metadata")
         whisper_folder.mkdir(parents=True, exist_ok=True)
         whisper_file = whisper_folder / f"{candidate_id}_q{idx}.json"
 
@@ -54,10 +54,9 @@ def process_all_answers(videos_input, candidate_id: str, cfg: dict):
         }
 
         with open(whisper_file, "w", encoding="utf-8") as f:
-            json.dump(whisper_data, f, ensure_ascii=False, indent=2)
+            json.dump(whisper_data, f, indent=2)
 
         result = evaluate_answer(text, qspec, meta, cfg)
-
         out = compose_hr_json(qspec, text, result, meta, source_url, video_path)
         results_all.append(out)
 
